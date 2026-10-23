@@ -35,7 +35,7 @@ The command is **silently optional**: when the sheet is not reachable, the outco
    }
    ```
    If missing, ask the user for the sheet URL (the ID is the string between `/d/` and `/edit`), confirm the tab name, and write the file.
-3. One cheap verification call: `get_values` on `<tab>!A<header_row>:L<header_row>`. An auth error → tell the user to re-authenticate via `/mcp` and stop. Never retry in a loop, never start an OAuth flow from this command.
+3. One cheap verification call: `get_values` on `<tab>!A<header_row>:M<header_row>`. An auth error → tell the user to re-authenticate via `/mcp` and stop. Never retry in a loop, never start an OAuth flow from this command.
 
 ---
 
@@ -55,7 +55,7 @@ It prints one JSON object per tracker row with a stable `key` and the `sheet_sta
 
 ## Step 3: Read the Sheet
 
-`get_values` on `<tab>!A<header_row+1>:L` (all data rows). Build a map `Key (column L) → sheet row number`. Note the highest numeric value in column A for numbering new rows.
+`get_values` on `<tab>!A<header_row+1>:M` (all data rows). Build a map `Key (column L) → sheet row number`. Note the highest numeric value in column A for numbering new rows.
 
 **Sheet layout** (the user's own columns - never rename, reorder, or reformat them):
 
@@ -73,8 +73,9 @@ It prints one JSON object per tracker row with a stable `key` and the `sheet_sta
 | J | Link / email | sync - fills only when blank, from tracker `source` |
 | K | Notes | **user** - sync writes only on append |
 | L | Key | sync - dedup anchor, never edited by hand |
+| M | Sponsorship | sync - tracker `sponsorship` (`PASS` / `UNKNOWN`, blank when unrecorded); fills when blank or when the tracker value changed |
 
-First run only: if L`<header_row>` is empty, write `Key` there. If the Status column's dropdown has no `No response` option, tell the user once that `/outcome stale` can produce that status and offer to add it to the dropdown; add it only on yes.
+First run only: if L`<header_row>` is empty, write `Key` there; if M`<header_row>` is empty, write `Sponsorship` there. If the Status column's dropdown has no `No response` option, tell the user once that `/outcome stale` can produce that status and offer to add it to the dropdown; add it only on yes. The same applies to a missing `Check sponsorship` option, which `sponsorship_check` rows (US postings with unconfirmed sponsorship, recorded for the user to check and apply to manually) need.
 
 ---
 
@@ -82,11 +83,12 @@ First run only: if L`<header_row>` is empty, write `Key` there. If the Status co
 
 For each sync-set row:
 
-1. **Key not in the sheet → append** a row to `<tab>!A:L`: `#` = max + 1, Company, Role, Date applied (`MM/DD/YYYY`; blank while `drafted`), Location and Work type from the archived posting at `documents/applications/<company>_<role>/job_posting.md` when it states them (else blank / `Unknown`), Status = `sheet_status`, Link = `source`, Notes blank, Key. Use `USER_ENTERED` so the date becomes a real date the dashboard formulas can count.
+1. **Key not in the sheet → append** a row to `<tab>!A:M`: `#` = max + 1, Company, Role, Date applied (`MM/DD/YYYY`; blank while `drafted`), Location and Work type from the archived posting at `documents/applications/<company>_<role>/job_posting.md` when it states them (else blank / `Unknown`), Status = `sheet_status`, Link = `source`, Notes blank, Key, Sponsorship = `sponsorship`. The Link is what the user applies through, so never drop it. Use `USER_ENTERED` so the date becomes a real date the dashboard formulas can count.
 2. **Key found → update cells only where needed:**
    - **Status (G):** if the sheet value already means the same thing as the tracker (`Phone screen` and `Interviewing` both mean `interview` - leave `Phone screen` alone), skip. Otherwise, **manual-edit guard:** if the current sheet value differs from `written_status[key]` (the user changed it by hand since the last sync), **do not overwrite** - list it under Conflicts and suggest `/outcome <company>` to record the change properly. Else write `sheet_status`.
    - **Date applied (D):** write when blank, or when the tracker row just moved out of `drafted` (date = the tracker `date`).
    - **Link (J):** write only when blank and `source` is non-empty.
+   - **Sponsorship (M):** write when blank and `sponsorship` is non-empty, or when it differs from the tracker (`UNKNOWN` -> `PASS` after the user confirmed sponsorship and re-ran `/apply`).
    - Never touch E, F, H, I, K on an existing row.
 3. Record every Status value you write (or found already equivalent) in `written_status[key]`.
 4. Batch writes (`update_values` with several ranges per call). Rows the user added by hand (empty Key) are invisible to this command - never modify or number-shift them.

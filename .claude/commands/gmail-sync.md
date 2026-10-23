@@ -68,7 +68,7 @@ For a matched message, classify by content (require the signal phrase in the sub
 
 | Signal | Example phrasing | Tracker `status` | `outcome.md` action |
 |---|---|---|---|
-| Application ack | "we've received your application" | `drafted` -> `applied`, otherwise *(no change)* | On a `drafted` row this is the one email that proves the user submitted by hand, and it arrives within a day of them doing so - propose the move with `date` set to the email's date. On any other status it is noise. |
+| Application ack | "we've received your application" | `drafted` -> `applied`, otherwise *(no change)* - a `sponsorship_check` row also moves to `applied` | On a `drafted` row this is the one email that proves the user submitted by hand, and it arrives within a day of them doing so - propose the move with `date` set to the email's date. On any other status it is noise. |
 | OA / assessment | "online assessment", "coding challenge", "complete your assessment", HackerRank/Codility links | `interview` | Tick nearest matching stage checkbox (or add a Notes line if no checkbox fits - assessments aren't always a listed stage) |
 | Interview invite/scheduled | "schedule a call", "phone screen", "technical interview", "next round", "onsite", "final round" | `interview` | Tick the matching stage checkbox with the email's date |
 | Offer extended | "pleased to offer", "extend an offer", "offer letter" | `offer` | Tick "Offer received" checkbox. **Never propose `hired` or `offer_declined` from an email** - accepting or declining is the user's decision, not something to infer. Flag prominently in the Step 6 summary as needing the user's decision, separate from the plain approve/skip table. |
@@ -149,7 +149,7 @@ Add every message ID processed this run - approved, skipped, unmatched, or filte
 
 For open applications with **no** matching activity found this run, check the tracker's `date` column and the most recent dated Notes entry in their `outcome.md`. If the most recent of those is 30+ days old, flag the application as "needs follow-up" in the closing summary below. This is surfaced only - never write anything for staleness.
 
-**Skip `drafted` rows here** - nothing was sent, so no one is late replying.
+**Skip `drafted` rows here** - nothing was sent, so no one is late replying. Skip `sponsorship_check` rows for the same reason.
 
 ---
 

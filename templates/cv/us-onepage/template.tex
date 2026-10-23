@@ -1,0 +1,76 @@
+% us-onepage: single-page US resume (Letter, serif, ruled small-caps-free headings).
+% Sections are fixed and ordered: Professional Experience, Projects, Education, Technical Skills.
+% No summary/profile statement, no photo, no references, no languages section.
+% Compile with tectonic (XeTeX): see TEMPLATE.md. Must be exactly 1 page.
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage[letterpaper,top=0.45in,bottom=0.45in,left=0.55in,right=0.55in]{geometry}
+\usepackage{fontspec}
+\setmainfont{texgyretermes}[
+  Extension = .otf,
+  UprightFont = *-regular,
+  BoldFont = *-bold,
+  ItalicFont = *-italic,
+  BoldItalicFont = *-bolditalic]
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\raggedright
+
+% Section heading: bold caps with a full-width rule underneath
+\titleformat{\section}{\large\bfseries}{}{0em}{\MakeUppercase}[\vspace{-7pt}\rule{\linewidth}{0.6pt}]
+\titlespacing*{\section}{0pt}{7pt}{3pt}
+
+% \jobentry{Company}{Location}{Title}{Dates}
+\newcommand{\jobentry}[4]{%
+  \textbf{#1}\hfill\textbf{#2}\\
+  \textit{#3}\hfill\textit{#4}\par\vspace{1pt}}
+% \projectentry{Name}{Tech stack}
+\newcommand{\projectentry}[2]{\textbf{#1}\ \ $|$\ \ \textit{#2}\par\vspace{1pt}}
+% \eduentry{School}{Dates}
+\newcommand{\eduentry}[2]{\textbf{#1}\hfill\textit{#2}\par}
+
+\setlist[itemize]{leftmargin=0.16in,label=\textbullet,itemsep=0pt,topsep=0pt,parsep=0pt,partopsep=0pt}
+\newcommand{\entrygap}{\vspace{4pt}}
+
+\begin{document}
+
+\begin{center}
+  {\fontsize{22pt}{24pt}\selectfont\textbf{[YOUR_NAME]}}\\[3pt]
+  [YOUR_CITY_STATE] \textbullet{} \href{mailto:[YOUR_EMAIL]}{[YOUR_EMAIL]} \textbullet{} [YOUR_PHONE] \textbullet{} \href{https://[YOUR_LINKEDIN_URL]}{[YOUR_LINKEDIN_URL]} \textbullet{} \href{https://[YOUR_GITHUB_URL]}{[YOUR_GITHUB_URL]}
+\end{center}
+
+\section{Professional Experience}
+
+\jobentry{[COMPANY]}{[LOCATION]}{[JOB_TITLE]}{[START] -- [END]}
+\begin{itemize}
+  \item [XYZ_BULLET_1]
+  \item [XYZ_BULLET_2]
+  \item [XYZ_BULLET_3]
+\end{itemize}
+\entrygap
+
+\section{Projects}
+
+\projectentry{[PROJECT_NAME]}{[TECH_STACK]}
+\begin{itemize}
+  \item [XYZ_BULLET_1]
+  \item [XYZ_BULLET_2]
+\end{itemize}
+
+\section{Education}
+
+\eduentry{[INSTITUTION]}{[START] -- [END]}
+[DEGREE]\\
+\textbf{Relevant Coursework}: [COURSEWORK]
+
+\section{Technical Skills}
+
+\textbf{Languages}: [LANGUAGES]\\
+\textbf{Frameworks \& Tools}: [FRAMEWORKS_AND_TOOLS]
+
+\end{document}

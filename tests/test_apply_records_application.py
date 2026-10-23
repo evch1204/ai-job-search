@@ -38,7 +38,7 @@ DOCS_README = REPO / "documents" / "README.md"
 
 TRACKER_HEADER = (
     "date,company,sector,role,role_type,channel,status,contact_person,"
-    "fit_rating,notes,cv_file,cover_letter_file,source,deadline"
+    "fit_rating,notes,cv_file,cover_letter_file,source,deadline,sponsorship"
 )
 
 
@@ -107,7 +107,7 @@ class ApplyRecordsApplication(unittest.TestCase):
         `deadline` anywhere but the end shifts every value in every existing
         row by one position."""
         self.assertTrue(
-            TRACKER_HEADER.endswith(",deadline"),
+            TRACKER_HEADER.endswith(",deadline,sponsorship"),
             "deadline must be the last column - a mid-header insert shifts every "
             "existing row's values by one position",
         )

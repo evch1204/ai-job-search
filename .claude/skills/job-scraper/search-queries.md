@@ -1,80 +1,87 @@
 # Search Queries for Job Scraper
 
-<!-- SETUP: Customize these queries based on your skills, target roles, and location -->
+<!-- Tailored for Tei (Evan) Chang: US-only, new-grad/early-career SWE, F-1 STEM OPT (needs H-1B sponsorship) -->
 
 ## Installed portal CLIs (primary for `/scrape`)
 
-`/scrape` discovers every portal skill under `.agents/skills/*/SKILL.md` and runs its CLI first. Shipped country-agnostic CLIs include `linkedin-search` and `freehire-search`; Danish demos and any skill you add with `/add-portal` are included the same way. You do **not** need a matching `site:` line below for those CLIs to run.
+`/scrape` discovers every portal skill under `.agents/skills/*/SKILL.md` and runs its CLI first. For this US-only setup only `linkedin-search` is enabled; `freehire-search` and the Danish demos are installed but disabled (`enabled: false`), and any skill you add with `/add-portal` is included the same way. You do **not** need a matching `site:` line below for those CLIs to run.
 
 The `site:` query templates in this file are the **WebSearch fallback** — for portals without a CLI, company career pages, or when a CLI fails.
 
 **Language scope:** write every query category in every language listed in your CLAUDE.md Languages table (typically 1-2, sometimes more). A posting requiring a language you have *not* declared, as a job condition, is excluded before scoring; a posting requiring a *higher level* than you declared in a language you *do* work in is flagged for your own judgment, not excluded — see `04-job-evaluation.md`'s Language Gate, the single source of truth for this rule. Translate each category's keywords rather than machine-translating word-for-word (e.g. "Frontend Developer" -> "Desarrollador Frontend", not a literal word-for-word translation) if you work in more than one language.
 
-## Search Sites
+## Search Sites (US only)
 
-Primary (your market's job boards - scaffold one with `/add-portal`):
-- **[YOUR_JOB_BOARD]** - your market's largest general job board
-- **linkedin.com/jobs** - LinkedIn job listings (filter: [YOUR_COUNTRY] / [YOUR_CITY]); also covered by `linkedin-search` CLI
-- **[YOUR_INDUSTRY_JOB_BOARD]** - a niche/industry board for your field (optional)
-- **[YOUR_ADDITIONAL_JOB_BOARD]** - another major board for your market (optional)
+Only these five boards are in scope. Every result must be a role located in the United States (or US-remote).
 
-Secondary (company career pages via Google):
-- Direct Google searches with `site:` filters for known target companies
+Primary (CLI):
+- **linkedin.com/jobs** - `linkedin-search` CLI. Run it twice per query: `-l "San Francisco Bay Area"` and `-l "United States" --remote remote`, both with `--jobage 14`.
+
+WebSearch fallback (no CLI - `/scrape` Step 1c runs these `site:` queries):
+- **indeed.com** - posting URLs look like `indeed.com/viewjob?jk=...`; skip `indeed.com/q-...` listing pages
+- **simplyhired.com** - posting URLs look like `simplyhired.com/job/...`
+- **hiring.cafe** - posting URLs look like `hiring.cafe/viewjob/...`
+- **joinhandshake.com** - most Handshake postings sit behind a student login, so web search surfaces only the few public ones; the user should also browse Handshake directly
+
+Disabled: `freehire-search` and the Danish portals (`enabled: false` in their SKILL.md).
 
 ## Query Categories
 
-Queries are grouped by priority. Write **each category in every language from your Languages table** (see Language scope above). Combine each query with your location terms (e.g. your city, region, or metro area) where the site supports it.
+Organize by function, not job title: list several plausible titles per category. Combine each with a US location term: `"Bay Area"`, `"San Jose"`, `"San Francisco"`, `"Santa Clara"`, or `remote "United States"`.
 
-**Organize by function, not job title.** The same underlying work carries different titles across companies and markets (a "Data Scientist" role at one employer may be posted as "Insights Analyst" or "Data Consultant" at another). Name each priority category after the function it covers, and list several plausible job titles as query variants within that category rather than betting an entire priority tier on one exact title string.
-
-### Priority 1: [YOUR_PRIMARY_ROLE_TYPE]
-
-These match your strongest and most desired career direction.
+### Priority 1: New-grad / early-career Software Engineer (full-stack, frontend, backend)
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE_1]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_PRIMARY_JOB_TITLE_2]" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_KEY_SKILL]" [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_PRIMARY_JOB_TITLE_1]" [YOUR_COUNTRY]
+site:indeed.com/viewjob "software engineer" ("new grad" OR "entry level" OR "early career") "Bay Area"
+site:indeed.com/viewjob "full stack engineer" (React OR TypeScript) ("San Jose" OR "San Francisco" OR remote)
+site:simplyhired.com/job "software engineer" ("new grad" OR "entry level") California
+site:hiring.cafe/viewjob "software engineer" ("new grad" OR "junior" OR "early career")
+site:joinhandshake.com "software engineer" "new grad"
+site:linkedin.com/jobs/view "software engineer" "new grad" "United States"
 ```
 
-### Priority 2: [YOUR_DOMAIN_EXPERTISE]
+LinkedIn CLI queries: `-q "software engineer new grad"`, `-q "full stack engineer"`, `-q "frontend engineer react"`, `-q "backend engineer"`, `-q "software engineer I"`.
 
-These match your domain expertise.
-
-```
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] OR [YOUR_REGION]
-site:[YOUR_JOB_BOARD] [YOUR_DOMAIN_KEYWORD_2] [YOUR_COUNTRY]
-site:linkedin.com/jobs [YOUR_DOMAIN_KEYWORD_1] [YOUR_CITY] [YOUR_COUNTRY]
-```
-
-### Priority 3: [YOUR_ADJACENT_ROLE_TYPE]
-
-Adjacent roles you could pivot into.
+### Priority 2: AI / LLM application engineering
 
 ```
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_1]" [YOUR_KEY_SKILL] [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "[YOUR_ADJACENT_TITLE_2]" [YOUR_KEY_SKILL] [YOUR_CITY]
+site:indeed.com/viewjob ("AI engineer" OR "LLM engineer" OR "machine learning engineer") ("entry level" OR "new grad") ("Bay Area" OR remote)
+site:simplyhired.com/job "AI engineer" ("entry level" OR junior) California
+site:hiring.cafe/viewjob ("AI engineer" OR "applied AI" OR "LLM") ("junior" OR "new grad")
+site:linkedin.com/jobs/view "AI engineer" "entry level" "United States"
 ```
 
-### Priority 4: Broader Technical / Consulting
+LinkedIn CLI queries: `-q "AI engineer"`, `-q "applied AI engineer"`, `-q "machine learning engineer new grad"`.
 
-Wider net for general technical roles.
+### Priority 3: Developer tools / platform / infrastructure (adjacent)
 
 ```
-site:[YOUR_JOB_BOARD] [YOUR_KEY_SKILL] developer [YOUR_CITY]
-site:linkedin.com/jobs "[YOUR_KEY_SKILL] developer" [YOUR_CITY]
-site:[YOUR_JOB_BOARD] "technical consultant" [YOUR_DOMAIN] [YOUR_CITY]
+site:indeed.com/viewjob ("developer tools" OR "developer experience" OR "platform engineer") ("entry level" OR "new grad")
+site:hiring.cafe/viewjob ("developer tools" OR "platform engineer" OR "SDK") junior
+```
+
+LinkedIn CLI queries: `-q "developer tools engineer"`, `-q "platform engineer entry level"`.
+
+### Priority 4: Sponsorship-first sweep
+
+Postings that state sponsorship up front pass the Sponsorship Gate without manual checking.
+
+```
+site:indeed.com/viewjob "software engineer" ("visa sponsorship" OR "H-1B" OR "OPT") -"no sponsorship" -"unable to sponsor"
+site:simplyhired.com/job "software engineer" ("visa sponsorship available" OR "will sponsor")
+site:hiring.cafe/viewjob "software engineer" ("visa sponsorship" OR "H-1B")
 ```
 
 ## Location Filter
 
-When evaluating results, verify the job location is within reasonable commute distance from your home. Define acceptable areas:
-- [YOUR_CITY] and surrounding areas
-- [ACCEPTABLE_AREA_1]
-- [ACCEPTABLE_AREA_2]
-- [BORDERLINE_AREA] (borderline - ~X min by transit)
-- [TOO_FAR_AREA] (too far)
+US roles only. A role located outside the United States is a location FAIL (excluded), never a sponsorship question.
+- **PASS:** San Jose, Santa Clara, Sunnyvale, Mountain View, Palo Alto, Cupertino, Milpitas, Fremont, Menlo Park, Redwood City, San Mateo, San Francisco, Oakland (Bay Area on-site or hybrid); remote within the US
+- **FLAG:** on-site elsewhere in the US (relocation - the user decides)
+- **FAIL:** outside the United States, or "remote" restricted to another country
+
+## Sponsorship Filter
+
+Every result goes through `04-job-evaluation.md`'s Sponsorship Gate (single source of truth). `/scrape` only notes obvious FAIL wording it can already see in a search snippet ("no sponsorship", "US citizens only", "clearance required") and marks it `skipped`; everything else is decided by `/rank` from the full posting.
 
 ## Language Filter
 
@@ -82,7 +89,7 @@ Your working languages and levels are in CLAUDE.md's Languages table. When filte
 
 ## Date Filter
 
-Only include jobs posted within the last 14 days, or with an application deadline that has not yet passed. If a posting date cannot be determined, include it but flag as "date unknown".
+Only include jobs posted within the last 14 days (LinkedIn CLI: `--jobage 14`), or with an application deadline that has not yet passed. If a posting date cannot be determined, include it but flag as "date unknown".
 
 ## Adapting Queries
 

@@ -1,38 +1,38 @@
 ---
-framework_version: 1.2.7
+framework_version: 1.3.0
 ---
 
 # Job Evaluation Framework
 
 <!-- SETUP: Skill match areas and career goals are personalized by running /setup -->
 
-## Eligibility Gate — run before scoring
+## Sponsorship Gate (US work authorization) — run before scoring
 
-If the candidate is not a citizen or permanent resident of the country they are applying in, run this first. It is a hard filter, not a scoring dimension, and it is separate from work-permit *timing*: timing asks "can they work the required hours yet?", eligibility asks "are they permitted to hold this job at all?". A candidate can pass timing and still be categorically excluded.
+The candidate is on **F-1 STEM OPT** and needs an employer that **sponsors H-1B** (and, for STEM OPT, is enrolled in **E-Verify**) — see Work Authorization in `01-candidate-profile.md`. Only **US-based roles** are in scope: a role located outside the United States is a location FAIL, not a sponsorship question. This gate is a hard filter, not a scoring dimension. Its verdict is tracked downstream: `/rank` records it as `sponsorship_gate` (PASS/FAIL/UNKNOWN) with a supporting `sponsorship_note`, and the tracker and Google Sheet carry it in the `sponsorship` column.
 
-Read the posting's eligibility / work rights / "who can apply" section **verbatim** and classify:
+Read the posting's work-authorization / sponsorship / "who can apply" / EEO-footer wording **verbatim** and classify:
 
 | Posting wording | Verdict |
 |-----------------|---------|
-| Names a **citizenship or permanent-residency requirement** ("must be a citizen of X", "permanent resident", "PR required", "full working rights" where the employer means citizen/PR) | **FAIL — hard stop.** Do not score, do not draft. Quote the exact wording back to the user. |
-| Requires a **security clearance** at any level | **FAIL** in most countries, since clearance is normally gated on citizenship. Verify the specific scheme rather than assuming. |
-| **Explicitly names** the candidate's permit class, or says "international applicants welcome", "visa holders considered", "we sponsor" | **PASS** — verified acceptance. Worth noting as a positive in the application. |
-| **Silent** on citizenship or residency | **PROCEED, but mark unverified.** Check the employer's own careers or international-applicant page before drafting. |
+| "Unable to sponsor", "will not sponsor", "no visa sponsorship (now or in the future)", "must be authorized to work in the US without current or future sponsorship", "US citizens only", "US citizen or green card holder", "permanent residents only", "not open to OPT/CPT/H-1B" | **FAIL — hard stop.** Do not score, do not draft, do not track. Quote the exact wording back to the user. |
+| Requires a **security clearance** (or eligibility for one), ITAR / EAR export-control "US person" status, or a federal role restricted to citizens | **FAIL.** Clearance and US-person status are citizenship-gated. |
+| **Explicitly** says it sponsors ("visa sponsorship available", "we sponsor H-1B", "open to candidates requiring sponsorship"), or names OPT / STEM OPT / CPT / F-1 / H-1B transfer as accepted | **PASS** — verified. Worth noting as a positive in the application. |
+| **Silent** on sponsorship and work authorization, or only a generic "must be authorized to work in the US" with no mention of sponsorship | **UNKNOWN — do not draft.** Record the job in the tracker with status `sponsorship_check`, `sponsorship` = `UNKNOWN`, and the posting URL in `source`, so the candidate can check it and apply manually. |
 
-**Two rules that are easy to get wrong:**
+**Rules that are easy to get wrong:**
 
-1. **Silence is not permission.** Large graduate programs frequently gate eligibility on their own website rather than in the job ad. Highest-risk categories: professional-services firms, government and defence, banking, telecommunications, and anything touching critical infrastructure.
-2. **A company-wide "we accept international applicants" statement is not role-level permission.** The common pattern is a general welcome followed by a *named list* of the specific programs or service lines it covers. Confirm the **specific posting or stream** appears on that list before drafting.
+1. **Silence is not permission.** UNKNOWN never proceeds to drafting, however good the fit. The candidate checks it (careers FAQ, H-1B filing history on public LCA databases such as h1bdata.info / myvisajobs.com, or by asking the recruiter) and decides.
+2. **"Must be authorized to work in the US" alone is UNKNOWN, not FAIL.** An OPT holder *is* currently authorized; the deciding phrase is "without sponsorship" / "now or in the future". Only those phrases make it a FAIL.
+3. **A company that sponsors in general may exclude a specific role.** A posting-level "no sponsorship for this position" overrides a company-wide policy page.
+4. **E-Verify is a flag, not a gate.** STEM OPT requires an E-Verify employer. If the posting or company says it participates in E-Verify, note it as a positive. If nothing says so, add "E-Verify unconfirmed" to the `sponsorship_note`; do not fail the role over it.
 
-**Report an eligibility failure to the user with the quoted source** rather than silently dropping the role. They may know something about their own status that the profile does not record.
+**Report a sponsorship FAIL to the user with the quoted source** rather than silently dropping the role — they may know something (a contact, a policy change) the posting does not show.
 
-If the candidate's permit also constrains *hours* or *start date* (a student visa with a term-time cap, a permit that begins on graduation), record that as a second gate under this section during `/setup`, with the specific dates. Do not merge it with the eligibility question above — they fail for different reasons and need different answers.
-
-A role that fails this gate is not scored and not drafted. Everything below applies only to roles that pass it.
+A role that is FAIL or UNKNOWN is not scored and not drafted. Everything below applies only to roles that PASS.
 
 ## Language Gate — run before scoring
 
-This gate checks a posting's language requirements against what the candidate actually speaks. It is not one of the five Scoring Dimensions below - it runs before them, structured the same way as the Eligibility Gate above: read the posting, classify against profile data, and treat a hard mismatch as FAIL before scoring. Its verdict is tracked downstream: `/rank` records the result as `language_gate` (PASS/FAIL/FLAG) with a supporting `language_note`, persists both into `seen_jobs.json`, and treats a FAIL as a shortlist veto; `/scrape` surfaces the flag in its results table and carries a language-override rule for postings whose ad language differs from the role's working language. `/apply`'s language detection (Step 1, which extracts a posting's required language generically) feeds this same check.
+This gate checks a posting's language requirements against what the candidate actually speaks. It is not one of the five Scoring Dimensions below - it runs before them, structured the same way as the Sponsorship Gate above: read the posting, classify against profile data, and treat a hard mismatch as FAIL before scoring. Its verdict is tracked downstream: `/rank` records the result as `language_gate` (PASS/FAIL/FLAG) with a supporting `language_note`, persists both into `seen_jobs.json`, and treats a FAIL as a shortlist veto; `/scrape` surfaces the flag in its results table and carries a language-override rule for postings whose ad language differs from the role's working language. `/apply`'s language detection (Step 1, which extracts a posting's required language generically) feeds this same check.
 
 Read the posting's language requirements as stated for **the role itself** — not the language the ad happens to be written in. A posting written in a language you don't work in, for a role that only needs languages you do work in on the job, passes fine; only an explicit job-condition requirement ("fluent X required," "must communicate with the Y team in Z") triggers this check. For each language the posting requires as a job condition, compare it against your Languages table in CLAUDE.md / `01-candidate-profile.md`:
 
@@ -60,9 +60,9 @@ How well do the required/preferred skills align with the candidate's capabilitie
 | 40-59 | Partial match, significant upskilling needed |
 | 0-39 | Fundamental mismatch |
 
-**Strong match areas:** [YOUR_PRIMARY_SKILLS]
-**Moderate match areas:** [YOUR_SECONDARY_SKILLS]
-**Weak match areas:** [SKILLS_YOU_LACK]
+**Strong match areas:** TypeScript/JavaScript, React, Next.js, Node.js, Python, full-stack web apps, AI/LLM application features, Docker and Cloudflare Workers/Containers, testing frameworks
+**Moderate match areas:** Java, C++, C, Swift/SwiftUI, C#/.NET, SQL/PostgreSQL, AWS, REST APIs, CI/CD, ML data pipelines (Hugging Face), OpenCV
+**Weak match areas:** Go, Rust, Kubernetes at scale, large-scale distributed systems, mobile (Android/Kotlin), embedded/firmware, deep ML research (model training from scratch)
 
 ### 2. Experience Match (0-100)
 Does work history align with what they're looking for? Match on the function and nature of the work performed, not the literal job title - a "Data Consultant" and a "Data Scientist" role can be functionally identical.
@@ -74,9 +74,9 @@ Does work history align with what they're looking for? Match on the function and
 | 40-59 | Adjacent experience, would need to make the case |
 | 0-39 | Unrelated experience |
 
-**Strong:** [YOUR_DIRECT_EXPERIENCE_DOMAINS]
-**Moderate:** [YOUR_ADJACENT_EXPERIENCE]
-**Entry-level:** [ROLES_WITH_LIMITED_EXPERIENCE]
+**Strong:** Full-stack/product SWE on AI-powered developer products, sandboxed code execution, SDK and developer tooling
+**Moderate:** ML engineering (inference paths, test frameworks, fine-tuning data), internal automation, backend/API work
+**Entry-level:** Infrastructure/SRE, data engineering at scale, security, research scientist
 
 ### 3. Behavioral/Culture Fit (0-100)
 Does the role and company culture match the behavioral profile?
@@ -93,7 +93,8 @@ Does the role and company culture match the behavioral profile?
 ### 4. Location & Logistics (Pass/Fail + Notes)
 - Within commute range: PASS
 - Remote with occasional office: PASS
-- Requires relocation: FAIL (deal-breaker)
+- Located outside the United States: FAIL (deal-breaker - US roles only)
+- Requires relocation within the US: FLAG (discuss with user)
 - Frequent international travel: FLAG (discuss with user)
 
 ### 5. Career Alignment & Motivation (0-100)
@@ -107,19 +108,19 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- [YOUR_CAREER_GOAL_1]
-- [YOUR_CAREER_GOAL_2]
-- [YOUR_CAREER_GOAL_3]
+- Full-time new-grad / early-career (0-2 yrs) software engineering role at a US company that sponsors H-1B
+- Build product-facing full-stack and AI/LLM-powered systems end to end
+- Grow on a strong engineering team with mentorship and ownership of shipped features
 
 **Motivation filter:** Evaluate not just whether you *can* do the tasks, but whether the tasks will *energize* you. Consider:
-- Tasks that energize: [YOUR_ENERGIZING_TASKS]
-- Tasks that drain: [YOUR_DRAINING_TASKS]
+- Tasks that energize: Shipping user-facing features end to end, developer tooling, AI-assisted workflows (inferred from resume - edit if wrong)
+- Tasks that drain: (not yet recorded - add your own)
 - Non-task factors: leadership style, department culture, company values, degree of autonomy
 
 **Life situation alignment:** Consider personal constraints:
-- **Security**: [YOUR_FINANCIAL_SITUATION_CONTEXT]
-- **Flexibility**: [YOUR_SCHEDULE_CONSTRAINTS]
-- **Professional development**: [YOUR_GROWTH_PRIORITIES]
+- **Security**: On STEM OPT: unemployment days count against the OPT limit, so time-to-offer matters
+- **Flexibility**: Available immediately; Bay Area on-site/hybrid or US remote
+- **Professional development**: Sponsorship-backed long-term role; deepen backend/distributed-systems and AI engineering
 
 ### 6. Salary Benchmark (Optional)
 
@@ -158,6 +159,7 @@ Present the evaluation as:
 | Technical Skills | XX/100 | [brief note] |
 | Experience Match | XX/100 | [brief note] |
 | Behavioral Fit | XX/100 | [brief note] |
+| Sponsorship | PASS | [quoted wording; E-Verify status] |
 | Location | PASS/FAIL | [brief note] |
 | Career Alignment | XX/100 | [brief note] |
 
@@ -176,7 +178,7 @@ Present the evaluation as:
 
 ### Company Research Checklist
 - [ ] Checked company website (mission, values, recent news)
-- [ ] Checked review sites (Glassdoor, Jobindex, etc.)
+- [ ] Checked review sites (Glassdoor, Levels.fyi, Blind) and H-1B filing history (h1bdata.info / myvisajobs.com)
 - [ ] Checked LinkedIn for team size, recent hires, connections
 - [ ] Checked media for restructuring, growth, or workplace issues
 - [ ] Identified network contacts who may know the team/manager

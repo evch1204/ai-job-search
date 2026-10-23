@@ -17,14 +17,15 @@ Create `reports/` if it does not exist.
 Read in parallel:
 
 1. **`job_search_tracker.csv`** — the primary source. Parse every row into a record with fields:
-   `date`, `company`, `sector`, `role`, `role_type`, `channel`, `status`, `contact_person`, `fit_rating`, `notes`, `cv_file`, `cover_letter_file`, `source`, `deadline`
+   `date`, `company`, `sector`, `role`, `role_type`, `channel`, `status`, `contact_person`, `fit_rating`, `notes`, `cv_file`, `cover_letter_file`, `source`, `deadline`, `sponsorship`
 
-   Rows written before `deadline` existed have thirteen fields and no fourteenth value. Treat the missing field as empty - never drop the row, and never infer a deadline from its `date`.
+   Rows written before `deadline` existed have thirteen fields and no fourteenth value. Treat the missing field as empty - never drop the row, and never infer a deadline from its `date`. The same holds for rows written before `sponsorship` existed: a missing fifteenth field is empty (unrecorded).
 
 2. **`documents/applications/*/outcome.md`** — for each resolved application, read the outcome file to get the exact interview stages reached (the checkboxes) and any notes. Merge this into the matching tracker row by company+role fuzzy match (lowercase, ignore punctuation). If an archive exists for a row but there is no match, attach it as extra context anyway.
 
 Status normalisation — map tracker values to six canonical buckets before computing stats:
 - `drafted` → **Drafted** (documents written by `/apply`, not yet submitted)
+- `sponsorship_check` → **Drafted** (US posting with unconfirmed sponsorship, waiting for the user to check it; tag it "check sponsorship" and link its `source`)
 - `applied` → **Active** (resume submitted, no further signal)
 - `interview` → **Interview**
 - `offer` → **Offer**

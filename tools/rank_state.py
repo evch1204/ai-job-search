@@ -14,8 +14,12 @@ This moves the state-file traffic into code. Three subcommands:
   sweep        rule 6's expiry pass over entries this run did not re-score -
                a stored-date comparison, no fetch, no agent
   apply        write scoring results back to seen_jobs.json and print the
-               ranked/vetoed/expired/unreachable/gave_up rows Step 5's
-               report is built from
+               ranked/vetoed/needs_check/expired/unreachable/gave_up rows
+               Step 5's report is built from
+  track-unknown
+               Step 4b: append a `sponsorship_check` tracker row for each
+               given key whose sponsorship gate is UNKNOWN, so the user can
+               check it and apply manually (the one tracker write /rank makes)
 
 Selection and projection follow Step 1's existing rules exactly (status
 filter, tracker exclusion, focus filter, `--limit`/`--all`); the write-back
@@ -32,6 +36,7 @@ Usage:
   python3 tools/rank_state.py candidates [--all] [--focus TEXT] [--limit N]
   python3 tools/rank_state.py sweep [--write] [--exclude KEY,KEY]
   python3 tools/rank_state.py apply --results results.json [--dry-run] [--now ISO-DATETIME]
+  python3 tools/rank_state.py track-unknown --keys KEY,KEY [--tracker PATH] [--dry-run]
 
 Both subcommands print JSON on stdout. Exit 0 on success, 1 on a usage or
 state error, or on `apply` when any result could not be written.
@@ -68,6 +73,19 @@ AGENT_STATUSES = ("scored", "expired", "unreachable")
 # The values the two veto gates may take (rank.md Step 2). Step 5's veto is an
 # exact match on "FAIL", so any other spelling would shortlist a deal-breaker.
 GATE_VERDICTS = ("PASS", "FAIL", "FLAG")
+
+# The Sponsorship Gate (04-job-evaluation.md) has no FLAG: a posting that is
+# silent on sponsorship is UNKNOWN, which is never shortlisted - it goes to the
+# tracker as `sponsorship_check` for the user to check by hand (Step 4b).
+SPONSORSHIP_VERDICTS = ("PASS", "FAIL", "UNKNOWN")
+
+# Canonical tracker header (/apply Step 6b, /outcome Step 1). Columns are only
+# ever appended, so a legacy tracker is migrated by extending its header line.
+TRACKER_HEADER = (
+    "date", "company", "sector", "role", "role_type", "channel", "status",
+    "contact_person", "fit_rating", "notes", "cv_file", "cover_letter_file",
+    "source", "deadline", "sponsorship",
+)
 
 # A posting that could not be fetched is `unreachable`, not `expired`, and is
 # retried on later runs (#534). It gives up to `expired` only after this many
@@ -408,6 +426,12 @@ def cmd_apply(args) -> int:
                 {"key": key, "error": f"unknown {bad_gate} {result[bad_gate]!r}; expected one of {', '.join(GATE_VERDICTS)}"}
             )
             continue
+        sponsorship = result.get("sponsorship_gate")
+        if sponsorship and sponsorship not in SPONSORSHIP_VERDICTS:
+            errors.append(
+                {"key": key, "error": f"unknown sponsorship_gate {sponsorship!r}; expected one of {', '.join(SPONSORSHIP_VERDICTS)}"}
+            )
+            continue
 
         # A missing deadline from the fresh fetch is not a correction to the
         # stored date. Scored keys are excluded from the later sweep, so apply
@@ -439,6 +463,15 @@ def cmd_apply(args) -> int:
             entry.pop("language_note", None)
         else:
             entry["language_note"] = result.get("language_note")
+        # An agent on a pre-gate prompt returns no verdict: leave the field
+        # absent (not evaluated) rather than inventing one either way.
+        if sponsorship:
+            entry["sponsorship_gate"] = sponsorship
+            note = result.get("sponsorship_note")
+            if note:
+                entry["sponsorship_note"] = str(note)[:200]
+            else:
+                entry.pop("sponsorship_note", None)
         # Absence is not a correction: a fetch that degraded to a listing page
         # returns no deadline, and blanking a stored one would erase a real
         # date and make the entry immortal to rule 6's sweep.
@@ -479,6 +512,8 @@ def cmd_apply(args) -> int:
                 "location_verdict": entry["location_verdict"],
                 "language_gate": entry["language_gate"],
                 "language_note": entry.get("language_note"),
+                "sponsorship_gate": entry.get("sponsorship_gate"),
+                "sponsorship_note": entry.get("sponsorship_note"),
                 "deadline": entry.get("deadline"),
                 "posted_date": entry.get("posted_date"),
                 "urgent": bool(parsed and today <= parsed <= today + timedelta(days=URGENT_DAYS)),
@@ -492,14 +527,18 @@ def cmd_apply(args) -> int:
         save_state(args.state, doc)
 
     rows.sort(key=lambda r: (r["score"], r["urgent"]), reverse=True)
-    veto = lambda r: r["location_verdict"] == "FAIL" or r["language_gate"] == "FAIL"
+    veto = lambda r: (
+        r["location_verdict"] == "FAIL" or r["language_gate"] == "FAIL" or r["sponsorship_gate"] == "FAIL"
+    )
     vetoed = [r for r in rows if veto(r)]
-    ranked = [r for r in rows if not veto(r)]
+    needs_check = [r for r in rows if not veto(r) and r["sponsorship_gate"] == "UNKNOWN"]
+    ranked = [r for r in rows if not veto(r) and r["sponsorship_gate"] != "UNKNOWN"]
     print(
         json.dumps(
             {
                 "ranked": ranked,
                 "vetoed": vetoed,
+                "needs_check": needs_check,
                 "expired": expired,
                 "unreachable": unreachable,
                 "gave_up": gave_up,
@@ -510,6 +549,81 @@ def cmd_apply(args) -> int:
             ensure_ascii=False,
         )
     )
+    return 1 if errors else 0
+
+
+def migrate_tracker_header(path: Path) -> list[str]:
+    """Create the tracker, or append missing trailing columns to its header line.
+
+    Same rule as /apply Step 6b and /outcome Step 1: columns are only ever
+    appended, and only the header line changes - no data row is touched, and
+    short legacy rows read the new columns as empty.
+    """
+    import csv
+
+    if not path.is_file() or not path.read_text(encoding="utf-8-sig").strip():
+        path.write_text(",".join(TRACKER_HEADER) + "\n", encoding="utf-8")
+        return list(TRACKER_HEADER)
+    text = path.read_text(encoding="utf-8-sig")
+    first, sep, rest = text.partition("\n")
+    header = next(csv.reader([first.rstrip("\r")]))
+    if header == list(TRACKER_HEADER[: len(header)]) and len(header) < len(TRACKER_HEADER):
+        header = list(TRACKER_HEADER)
+        eol = "\r\n" if first.endswith("\r") else ""
+        path.write_text(",".join(header) + eol + sep + rest, encoding="utf-8")
+    return header
+
+
+def cmd_track_unknown(args) -> int:
+    """Step 4b: record UNKNOWN-sponsorship jobs in the tracker for manual review."""
+    import csv
+
+    _, jobs = load_state(args.state)
+    keys = [k.strip() for k in (args.keys or "").split(",") if k.strip()]
+    existing = tracker_pairs(args.tracker)
+    added, skipped, errors = [], [], []
+    rows = []
+    for key in keys:
+        entry = jobs.get(key)
+        if not isinstance(entry, dict):
+            errors.append({"key": key, "error": "unknown key"})
+            continue
+        if entry.get("sponsorship_gate") != "UNKNOWN":
+            errors.append({"key": key, "error": f"sponsorship_gate is {entry.get('sponsorship_gate')!r}, not UNKNOWN"})
+            continue
+        company, role = entry.get("company") or "", entry.get("title") or ""
+        if (norm(company), norm(role)) in existing:
+            skipped.append({"key": key, "company": company, "role": role, "reason": "already in tracker"})
+            continue
+        existing.add((norm(company), norm(role)))
+        note = "check sponsorship"
+        if entry.get("sponsorship_note"):
+            # /outcome and /gmail-sync rewrite rows without quoting, so keep
+            # the note comma-free even though this writer quotes properly.
+            note += "; " + str(entry["sponsorship_note"]).replace(",", ";")[:150]
+        row = {
+            "date": args.today.isoformat(),
+            "company": company,
+            "role": role,
+            "channel": "portal",
+            "status": "sponsorship_check",
+            "notes": note,
+            "source": entry.get("url") or "",
+            "deadline": entry.get("deadline") or "",
+            "sponsorship": "UNKNOWN",
+        }
+        rows.append(row)
+        added.append({"key": key, "company": company, "role": role, "url": row["source"]})
+    if rows and not args.dry_run:
+        header = migrate_tracker_header(args.tracker)
+        with args.tracker.open("a", encoding="utf-8", newline="") as fh:
+            text = args.tracker.read_text(encoding="utf-8")
+            if text and not text.endswith("\n"):
+                fh.write("\n")
+            writer = csv.DictWriter(fh, fieldnames=header, extrasaction="ignore", lineterminator="\n")
+            writer.writerows(rows)
+    print(json.dumps({"added": added, "skipped": skipped, "errors": errors, "written": bool(rows) and not args.dry_run},
+                     indent=2, ensure_ascii=False))
     return 1 if errors else 0
 
 
@@ -555,6 +669,12 @@ def main() -> int:
     app.add_argument("--results", required=True, help="JSON array from the scoring agents")
     app.add_argument("--dry-run", action="store_true")
     app.set_defaults(func=cmd_apply)
+
+    track = sub.add_parser("track-unknown", parents=[common], help="Step 4b: tracker rows for UNKNOWN sponsorship")
+    track.add_argument("--keys", required=True, help="comma-separated keys from apply's needs_check rows")
+    track.add_argument("--tracker", type=Path, default=TRACKER)
+    track.add_argument("--dry-run", action="store_true")
+    track.set_defaults(func=cmd_track_unknown)
 
     args = ap.parse_args()
     return args.func(args)

@@ -871,5 +871,74 @@ class Unreachable(RankStateCase):
                 self.assertEqual(self.read_state()["a"]["status"], "new", "a rejected result never half-writes an entry")
 
 
+
+class SponsorshipGate(Apply):
+    """The US Sponsorship Gate (04-job-evaluation.md): FAIL is a veto, UNKNOWN
+    is never shortlisted - it comes back under needs_check for Step 4b."""
+
+    def test_fail_is_vetoed_and_unknown_needs_a_manual_check(self):
+        self.write_state({"a": entry(), "b": entry(company="Beta"), "c": entry(company="Gamma")})
+        out = self.run_tool("apply", "--results", self.results([
+            self._scored(key="a", sponsorship_gate="PASS"),
+            self._scored(key="b", sponsorship_gate="FAIL", sponsorship_note='"unable to sponsor"'),
+            self._scored(key="c", sponsorship_gate="UNKNOWN", sponsorship_note="silent"),
+        ]))
+        self.assertEqual([r["key"] for r in out["ranked"]], ["a"])
+        self.assertEqual([r["key"] for r in out["vetoed"]], ["b"])
+        self.assertEqual([r["key"] for r in out["needs_check"]], ["c"])
+        state = self.read_state()
+        self.assertEqual(state["c"]["sponsorship_gate"], "UNKNOWN")
+        self.assertEqual(state["c"]["sponsorship_note"], "silent")
+        self.assertNotIn("sponsorship_note", state["a"])
+
+    def test_missing_verdict_is_left_unevaluated_not_guessed(self):
+        self.write_state({"a": entry()})
+        out = self.run_tool("apply", "--results", self.results([self._scored()]))
+        self.assertEqual([r["key"] for r in out["ranked"]], ["a"])
+        self.assertNotIn("sponsorship_gate", self.read_state()["a"])
+
+    def test_unknown_verdict_spelling_is_an_error(self):
+        self.write_state({"a": entry()})
+        out = self.run_tool("apply", "--results", self.results([self._scored(sponsorship_gate="MAYBE")]), expect=1)
+        self.assertEqual(out["errors"][0]["key"], "a")
+
+
+class TrackUnknown(RankStateCase):
+    """Step 4b: UNKNOWN-sponsorship jobs become `sponsorship_check` tracker rows."""
+
+    LEGACY = ("date,company,sector,role,role_type,channel,status,contact_person,"
+              "fit_rating,notes,cv_file,cover_letter_file,source,deadline")
+
+    def setUp(self):
+        super().setUp()
+        self.tracker = self.tmp / "tracker.csv"
+
+    def test_appends_a_row_with_link_and_migrates_the_header_only(self):
+        self.tracker.write_text(self.LEGACY + "\n2026-08-14,Apple,,\"SWE, Early Career\",,,applied,,,x,,,,\n",
+                                encoding="utf-8")
+        self.write_state({"a": entry(title="Software Engineer, New Grad", company="Acme",
+                                     url="https://jobs.acme.com/1", sponsorship_gate="UNKNOWN",
+                                     sponsorship_note="no wording, E-Verify unconfirmed")})
+        out = self.run_tool("track-unknown", "--keys", "a", "--tracker", str(self.tracker))
+        self.assertEqual(len(out["added"]), 1)
+        lines = self.tracker.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(lines[0], self.LEGACY + ",sponsorship")
+        self.assertEqual(lines[1], '2026-08-14,Apple,,"SWE, Early Career",,,applied,,,x,,,,', "data rows untouched")
+        row = list(csv.DictReader(self.tracker.open(encoding="utf-8")))[1]
+        self.assertEqual(row["status"], "sponsorship_check")
+        self.assertEqual(row["sponsorship"], "UNKNOWN")
+        self.assertEqual(row["source"], "https://jobs.acme.com/1")
+        self.assertNotIn(",", row["notes"], "notes stay comma-free for the unquoted row rewriters")
+
+    def test_rerun_never_duplicates_and_non_unknown_keys_are_errors(self):
+        self.write_state({"a": entry(sponsorship_gate="UNKNOWN"), "b": entry(company="B", sponsorship_gate="PASS")})
+        self.run_tool("track-unknown", "--keys", "a", "--tracker", str(self.tracker))
+        out = self.run_tool("track-unknown", "--keys", "a,b", "--tracker", str(self.tracker), expect=1)
+        self.assertEqual(out["added"], [])
+        self.assertEqual(out["skipped"][0]["key"], "a")
+        self.assertEqual(out["errors"][0]["key"], "b")
+        self.assertEqual(len(self.tracker.read_text(encoding="utf-8").splitlines()), 2)
+
+
 if __name__ == "__main__":
     unittest.main()

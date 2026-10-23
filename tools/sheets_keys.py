@@ -32,12 +32,13 @@ from pathlib import Path
 TRACKER_HEADER = [
     "date", "company", "sector", "role", "role_type", "channel", "status",
     "contact_person", "fit_rating", "notes", "cv_file", "cover_letter_file",
-    "source", "deadline",
+    "source", "deadline", "sponsorship",
 ]
 
 # Sheet dropdown (column G) -> tracker canonical status.
 SHEET_TO_TRACKER = {
     "to apply": "drafted",
+    "check sponsorship": "sponsorship_check",
     "applied": "applied",
     "phone screen": "interview",
     "interviewing": "interview",
@@ -50,6 +51,7 @@ SHEET_TO_TRACKER = {
 # Tracker canonical status -> sheet dropdown value.
 TRACKER_TO_SHEET = {
     "drafted": "To apply",
+    "sponsorship_check": "Check sponsorship",
     "applied": "Applied",
     "interview": "Interviewing",
     "offer": "Offer",
@@ -116,6 +118,7 @@ def cmd_rows(tracker: Path) -> None:
             "status": status,
             "sheet_status": TRACKER_TO_SHEET.get(status.lower(), "Applied"),
             "source": r.get("source", ""),
+            "sponsorship": r.get("sponsorship") or "",
             "channel": r.get("channel", ""),
             "notes": r.get("notes", ""),
         })
@@ -173,6 +176,7 @@ def cmd_import(export: Path, tracker: Path) -> None:
             "contact_person": "", "fit_rating": "",
             "notes": "; ".join(note_parts) + ("; imported from Google Sheet" if note_parts else "imported from Google Sheet"),
             "cv_file": "", "cover_letter_file": "", "source": source, "deadline": "",
+            "sponsorship": "",
         })
 
     with tracker.open("w", newline="", encoding="utf-8") as f:
