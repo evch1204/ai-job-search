@@ -1,8 +1,8 @@
 ---
 name: scrape
 description: >
-  Finds new job postings matching your profile via installed portal-search CLIs
-  (LinkedIn, local job boards, and any skills added with /add-portal). Deduplicates
+  Finds new US job postings matching your profile via the LinkedIn CLI plus web search
+  over Indeed, SimplyHired, hiring.cafe and Handshake (and any skills added with /add-portal). Deduplicates
   across runs. Triggers on: job scrape, find jobs, search jobs, new jobs, job search,
   scrape jobs, /scrape
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bun --version), Bash(python tools/job_key.py:*), Bash(python3 tools/job_key.py:*), Bash(python tools/scrape_state.py:*), Bash(python3 tools/scrape_state.py:*), WebFetch, WebSearch, Agent, AskUserQuestion
@@ -146,6 +146,8 @@ For each new job, do a rapid fit check (NOT the full evaluation from `04-job-eva
 - **Low match**: Role requires significant skills you lack
 
 **Language override:** before assigning a match level, check the posting against `04-job-evaluation.md`'s Language Gate (a required language you haven't declared at all in your CLAUDE.md Languages table). A required language that's entirely undeclared overrides skill fit: mark it **Low** regardless of how well the skills align, and name it in the highlight bullets so it isn't buried under an otherwise-good-looking match. A **declared** language at a requirement that reads higher than your declared level is *not* an override — score fit normally, but add a red-flag bullet under that job's highlights (Step 5) quoting the posting's requirement next to your declared level, so the gap is visible without being auto-downgraded.
+
+**Sponsorship and US-location override:** the candidate needs H-1B sponsorship (F-1 STEM OPT) and only US roles are in scope. If the fetched detail or search snippet already shows `04-job-evaluation.md`'s Sponsorship Gate FAIL wording ("no sponsorship", "unable to sponsor", "US citizens only", "green card", "security clearance") or a location outside the United States, store the job with `"status": "skipped"` and leave it out of the Step 5 table (count it in the summary line). Do not try to decide PASS vs UNKNOWN here - that needs the full posting and is `/rank`'s job. Recommend `/rank` as the next step in Step 5.
 
 ### Step 4: Deduplicate & Store
 

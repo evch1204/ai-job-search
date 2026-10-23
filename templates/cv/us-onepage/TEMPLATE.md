@@ -26,6 +26,7 @@
 
 ## Known pitfalls
 
+- **Run the layout check as `python3 tools/verify_layout.py cv/main_<company>_<role>.pdf --no-footer`.** The template has no page-number footer, so a full page legitimately runs into the bottom 90pt band that the default check reserves for a footer; without the flag every full resume is misreported as a footer collision.
 - `%`, `&`, `#`, `$`, `_` must be escaped (`85\%+`, `C\#`, `Probability \& Statistics`) - an unescaped `%` silently comments out the rest of the line.
 - First compile downloads the TeX bundle (needs network once); later compiles are offline-cached.
 - `\section` headings are uppercased by the template - write them in Title Case in the source.

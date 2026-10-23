@@ -1,5 +1,5 @@
 ---
-framework_version: 1.5.0
+framework_version: 1.5.1
 ---
 
 # CV Templates and Tailoring Guide
@@ -15,6 +15,7 @@ framework_version: 1.5.0
 > - **Compile command:** `rm -f <file>.pdf && mkdir -p build && tectonic -X compile --outdir build <file>.tex && mv build/<file>.pdf ./` (not the command named in the stock guidance below — `/apply`'s compile step must use this instead). Run it from the output directory. If it redirects to `build/`, the log is in `build/`, and `/apply`'s Step 5e cleanup must delete that `build/` folder too
 > - **Fonts:** TeX Gyre Termes, from tectonic's bundle (no install; first compile downloads it)
 > - **Page limit:** exactly 1 page(s)
+> - **Layout check:** run `tools/verify_layout.py` on the resume with `--no-footer` (this template prints no page number)
 > - **Output file:** `cv/main_<company>_<role>.tex`; the template needs no companion class, package, or font files
 > - **US resume overrides (these replace the stock structure below):** sections are exactly Professional Experience, Projects, Education, Technical Skills, in that order. **No** profile statement/summary, Core Competencies, Languages, Publications, Honors and Awards, or References section — ignore the stock guidance for those sections and the 2-page budget table; the page budget is 1 page and is met by cutting the weakest bullets. Every bullet follows the XYZ formula (*Accomplished [X] as measured by [Y], by doing [Z]*) with metrics drawn only from `01-candidate-profile.md`. Tailor through bullet selection and ordering, project ordering, bolded keywords, and skills ordering — the "profile statement" tailoring step becomes "re-order and re-word the top bullets of the most recent role toward the posting". Filled reference resume: `cv/baseline_general_swe.tex`
 <!-- END ACTIVE-TEMPLATE -->

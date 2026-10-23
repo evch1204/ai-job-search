@@ -1,8 +1,23 @@
 ---
-framework_version: 1.0.2
+framework_version: 1.1.0
 ---
 
 # Cover Letter Templates and Tailoring Guide
+
+<!-- BEGIN ACTIVE-TEMPLATE (managed by /add-template - do not edit by hand) -->
+> **Active template override: `cover-cls-tectonic`**
+>
+> A custom template is active. Where this block conflicts with the stock guidance below, this block wins. Structural advice below (tailoring, page-budget, cutting rules) still applies.
+>
+> - **Template skeleton:** `cover_letters/cover_example.tex` — the stock cover.cls letter; only the toolchain differs
+> - **Manifest:** none — the stock guidance below is the style guide
+> - **Source extension:** `.tex`
+> - **Compile command:** `rm -f <file>.pdf && mkdir -p build && tectonic -X compile --outdir build <file>.tex && mv build/<file>.pdf ./` (not the `xelatex` command named in the stock guidance below — this machine has tectonic, a XeTeX engine, instead of a TeX distribution). Run it from the output directory. If it redirects to `build/`, the log is in `build/`, and `/apply`'s Step 5e cleanup must delete that `build/` folder too
+> - **Fonts:** Lato/Raleway from `cover_letters/OpenFonts/fonts/` (bundled; `\fontspec` paths are relative to `cover_letters/`)
+> - **Page limit:** exactly 1 page(s)
+> - **Output file:** `cover_letters/cover_<company>_<role>.tex`; `cover.cls` and `OpenFonts/` are already in that directory
+> - **When:** only when the posting requires or invites a cover letter (US default is resume only). US conventions: English, Letter paper, "Dear Hiring Manager" when no name is given, closing "Best regards,". Never state or imply US citizenship or permanent residency; when the posting raises work authorization, say plainly "I am on F-1 STEM OPT and will require H-1B sponsorship".
+<!-- END ACTIVE-TEMPLATE -->
 
 ## Template: Custom cover.cls (XeLaTeX)
 
@@ -76,7 +91,7 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %     TITLE NAME
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\namesection{}{\Huge{[YOUR_NAME]}}{  \href{mailto:[YOUR_EMAIL]}{[YOUR_EMAIL]} | [YOUR_PHONE] |  \urlstyle{same}\href{[YOUR_LINKEDIN_URL]}{LinkedIn}
+\namesection{}{\Huge{Tei (Evan) Chang}}{  \href{mailto:changtei1204@gmail.com}{changtei1204@gmail.com} | +1 (301) 768-8151 |  \urlstyle{same}\href{https://linkedin.com/in/evan-chang1}{LinkedIn}
 }
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -106,9 +121,9 @@ The font wrapper is mandatory — if you just move `\begin{itemize}` outside `\l
 \begin{flushright}
 % No trailing \\ inside \closing{} - cover.cls appends its own \\, and a
 % doubled break triggers "! LaTeX Error: There's no line here to end."
-\closing{Kind regards,}
+\closing{Best regards,}
 
-\signature{[YOUR_NAME]}
+\signature{Tei (Evan) Chang}
 \end{flushright}
 \end{document}
 ```

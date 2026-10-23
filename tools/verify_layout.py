@@ -443,7 +443,15 @@ def main() -> int:
     _force_utf8_output()
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("pdf", nargs="?", type=Path)
+    ap.add_argument(
+        "--no-footer", action="store_true",
+        help="the template prints no page number (e.g. templates/cv/us-onepage): measure the "
+             "whole page as body and skip the footer-band checks",
+    )
     args = ap.parse_args()
+    if args.no_footer:
+        global FOOTER_BAND_PT
+        FOOTER_BAND_PT = 0.0
 
     if not args.pdf:
         ap.error("pdf is required")

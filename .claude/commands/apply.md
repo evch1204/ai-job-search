@@ -284,7 +284,7 @@ The hole check is the one a visual read misses. A moderncv `\cventry` renders as
 
 If Poppler is missing, or no `pdftotext` on PATH supports `-bbox` (Git for Windows ships an xpdf build without it), the script exits 2 with `skipped:` - note the degraded mode in the Step 6 report and rely on the visual inspection alone. Exit 2 is never a layout verdict.
 
-The thresholds are calibrated for the stock moderncv and `cover.cls` geometry; a template registered via `/add-template` may report a phantom hole above a footer the 90pt band does not cover.
+The thresholds are calibrated for the stock moderncv and `cover.cls` geometry; a template registered via `/add-template` may report a phantom hole above a footer the 90pt band does not cover. When the active template's block or manifest declares extra `verify_layout.py` flags (the `us-onepage` resume declares `--no-footer`), add them to that document's invocation.
 
 Then read both PDFs via the Read tool and verify:
 
