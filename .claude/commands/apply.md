@@ -34,6 +34,8 @@ Use this when the user asks for several applications at once - "find the best 10
 
 **B5. Finish.** One `/sheets-sync`, then one table: company, role, score, sponsorship note, upload folder (`cv/submit/<company>_<role>/`), QA result. Then the user only has to open each link and upload two files.
 
+**Questions for you.** Never guess to fill a gap. Writers return any posting requirement they could not cover from the profile, any "flag it" stretch, and any fact they needed but did not have (a metric, a tool, dates); the orchestrator lists them after the table under **"Questions for you"**, one line each, with the job it affects. When the user answers, write the new facts to `01-candidate-profile.md` in the same turn (the Standing rule above) and re-draft only the affected jobs.
+
 ### Writer brief (paste into each writer agent's prompt, jobs filled in)
 
 ```
@@ -52,7 +54,7 @@ For each job, following /apply Steps 2, 4 and 5 (.claude/commands/apply.md):
 4. Compile both with the tectonic commands in the ACTIVE-TEMPLATE blocks (resume from cv/, letter from cover_letters/); verify_pdf.py --pages 1 on each and verify_layout.py (resume with --no-footer); fix until both pass.
 5. Copy the PDFs to cv/submit/<slug>/Tei_Chang_Resume.pdf and Tei_Chang_Cover_Letter.pdf; archive the posting text to documents/applications/<slug>/job_posting.md (Step 6b item 7 format).
 6. Record it: python3 tools/record_application.py --company ... --role ... --url ... --cv cv/main_<slug>.tex --cover cover_letters/cover_<slug>.tex --sponsorship <PASS|UNKNOWN> --note "<sponsorship note>" --fit <score> --deadline <date or empty>
-Return per job: slug, files written, 2-3 key tailoring choices, any bullet that is a stretch ("flag it" zone of 03-writing-style.md), and any step that failed.
+Return per job: slug, files written, 2-3 key tailoring choices, any bullet that is a stretch ("flag it" zone of 03-writing-style.md), any fact you needed but the profile lacks (as a question for the candidate - never invent it), and any step that failed.
 ```
 
 The base resumes (`cv/baseline_general_swe.tex`, `cv/variant_fullstack.tex`, `cv/variant_ai_ml.tex`) are starting points, never sent as-is. When the profile changes, refresh and recompile them once.
