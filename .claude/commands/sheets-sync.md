@@ -33,7 +33,7 @@ The command is **silently optional**: when the sheet is not reachable, the outco
      "last_sync": "YYYY-MM-DD",
      "written_status": { "<key>": "<sheet status value last written by this command>" },
      "ai_tab": "JOB APPLICATION AI",
-     "ai_header_row": 1
+     "ai_header_row": 3
    }
    ```
    **Two tabs.** `tab` is the user's original tracker tab (the one-time import lives there); `ai_tab` holds every row this workflow added since. Rows whose Key is already in `tab` keep being updated **there**, in that tab's layout. Every other row is appended to `ai_tab`, in the layout below. When `ai_tab` is absent, everything uses `tab` (the original behaviour).
@@ -78,7 +78,7 @@ It prints one JSON object per tracker row with a stable `key` and the `sheet_sta
 | L | Key | sync - dedup anchor, never edited by hand |
 | M | Sponsorship | sync - tracker `sponsorship` (`PASS` / `UNKNOWN`, blank when unrecorded); fills when blank or when the tracker value changed |
 
-**AI tab layout** (`ai_tab`; same ownership rules as the matching columns above - user-owned columns are never overwritten on existing rows):
+**AI tab layout** (`ai_tab`; same ownership rules as the matching columns above - user-owned columns are never overwritten on existing rows). Rows 1-2 are a title bar and a color legend, row 3 the header. The tab's look - row banding, borders, and the status colors (To apply blue, Check sponsorship orange, Interviewing yellow, Offer green, Rejected red, Skipped/Withdrawn/No response grey, Applied white) - comes from banding and conditional-format rules keyed on column G, so appended rows pick it up automatically: **write values only, never formats.** Write the Link as `=HYPERLINK("<source>","open link")` with `USER_ENTERED`, matching the original tab.
 
 | Col | Header | Owner |
 |---|---|---|
