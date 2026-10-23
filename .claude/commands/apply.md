@@ -88,13 +88,13 @@ Present the evaluation to the user with:
 6. **Overall fit score** and recommendation (strong fit / moderate fit / weak fit)
 
 After presenting the evaluation, ask the user:
-> "Should I proceed with drafting the resume for this role?" - and, only when the posting requires or invites a cover letter, "...the resume and a cover letter?"
+> "Should I proceed with drafting the resume and cover letter for this role?"
 
 **If the user says no, stop here.** If yes, continue to Step 2.
 
 ---
 
-## Step 2: DRAFTER - Draft Resume (+ Cover Letter only if the posting asks)
+## Step 2: DRAFTER - Draft Resume + Cover Letter
 
 You already have `01-candidate-profile.md` and `04-job-evaluation.md` in context from Step 1. **Do not re-read them.**
 
@@ -126,9 +126,9 @@ Also read the most recent existing CV and cover letter files for concrete struct
 - Keep to exactly 1 page
 - **Grounding Audit:** Before writing to disk, audit all tailored bullet points against the union of three sources: `.claude/skills/job-application-assistant/01-candidate-profile.md` + the master CV (`cv/baseline_general_swe.tex`) + `CLAUDE.md`'s Candidate Profile section to verify that all dates, roles, and metrics match exactly (zero profile drift or fabrication).
 
-### Cover Letter (`cover_letters/cover_<company>_<role><COVER_EXT>`) - only when the posting asks
+### Cover Letter (`cover_letters/cover_<company>_<role><COVER_EXT>`) - drafted by default
 
-**Default: no cover letter.** US applications rarely need one. Draft it only when the posting requires a cover letter or explicitly invites one ("cover letter required", "please include a cover letter", an application form with a cover-letter upload marked required). When no cover letter is drafted, skip every cover-letter item in Steps 3-6 (reviewer input, compile, page check, layout check, checklist) and leave `cover_letter_file` empty in the tracker.
+**Default: draft one for every application.** Whether a cover letter is wanted usually only shows on the employer's application form, after the posting has been read (Stripe's and EvenUp's forms both asked for one while their postings said nothing), so always have it ready. Skip it only when the user says so for this run, or the posting says not to send one; then skip every cover-letter item in Steps 3-6 and leave `cover_letter_file` empty in the tracker.
 
 - **Match the language of the job posting** (English for US postings)
 - Follow the structure from `06-cover-letter-templates.md`
@@ -277,7 +277,7 @@ python3 tools/verify_layout.py cv/main_<company>_<role>.pdf
 python3 tools/verify_layout.py cover_letters/cover_<company>_<role>.pdf
 ```
 
-The two `--pages` lines are the page-count check: exactly 1 page for the resume and exactly 1 for the cover letter (when one was drafted) (the hard limits in `05-cv-templates.md` and `06-cover-letter-templates.md`), exit 1 otherwise. With a custom template active, substitute its declared **Page limit** from the `ACTIVE-TEMPLATE` block. Nothing else runs this check - `verify_layout.py` deliberately leaves page count to it, and Step 5d's extraction call passes no `--pages` - so if these lines are skipped, the page budget is enforced by nothing but the visual read below.
+The two `--pages` lines are the page-count check: exactly 1 page for the resume and exactly 1 for the cover letter (the hard limits in `05-cv-templates.md` and `06-cover-letter-templates.md`), exit 1 otherwise. With a custom template active, substitute its declared **Page limit** from the `ACTIVE-TEMPLATE` block. Nothing else runs this check - `verify_layout.py` deliberately leaves page count to it, and Step 5d's extraction call passes no `--pages` - so if these lines are skipped, the page budget is enforced by nothing but the visual read below.
 
 The layout script reports, per page, where the text starts and stops, bottom whitespace as a share of page height, and the largest vertical gap between lines. It exits 1 on: a hole over 100pt (~7 blank lines), a non-final page ending more than 25% early, body text colliding with the page-number footer, a final page more than 35% empty, and an entry header or section heading stranded at a page break. Page count is **not** checked here — that is `verify_pdf.py --pages`'s job, and the two `--pages` lines above run it.
 
@@ -376,7 +376,7 @@ Employers see the uploaded file's name, so never ask the user to upload `main_<c
 ```bash
 mkdir -p "cv/submit/<company>_<role>"
 cp cv/main_<company>_<role>.pdf "cv/submit/<company>_<role>/Tei_Chang_Resume.pdf"
-cp cover_letters/cover_<company>_<role>.pdf "cv/submit/<company>_<role>/Tei_Chang_Cover_Letter.pdf"   # only when a cover letter was drafted
+cp cover_letters/cover_<company>_<role>.pdf "cv/submit/<company>_<role>/Tei_Chang_Cover_Letter.pdf"
 ```
 
 The folder keeps each application's copy separate, so the same filename never overwrites another job's resume. PDFs are git-ignored, so these stay local. The working files keep their `main_<company>_<role>` names for the tracker.
@@ -400,8 +400,8 @@ Summarize 3-5 key decisions made to tailor the application:
 ### Files Created
 List the files written:
 - `cv/main_<company>_<role><CV_EXT>`
-- `cover_letters/cover_<company>_<role><COVER_EXT>` (only when the posting asked for a cover letter)
-- **To upload:** `cv/submit/<company>_<role>/Tei_Chang_Resume.pdf` (and `Tei_Chang_Cover_Letter.pdf`, if drafted)
+- `cover_letters/cover_<company>_<role><COVER_EXT>`
+- **To upload:** `cv/submit/<company>_<role>/Tei_Chang_Resume.pdf` and `cv/submit/<company>_<role>/Tei_Chang_Cover_Letter.pdf`
 
 Tell the user which file to upload (the `cv/submit/` copy) and to open it once before submitting.
 

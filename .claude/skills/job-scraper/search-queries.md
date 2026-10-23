@@ -15,12 +15,13 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 **Robots rule first:** never fetch a page whose robots.txt disallows Claude's agent (`Claude-User`) - check with `python3 tools/robots_check.py <url>`. As checked on 2026-10-23 that rules out LinkedIn job pages (search, detail and `/jobs/view/`), `app.joinhandshake.com`, `hiring.cafe/viewjob/...` and `indeed.com/viewjob`. Postings from those sites reach the workflow only when the user brings them in, and then `/apply` reads the **employer's own copy** instead.
 
 Sources, searched in this order (the user can name any subset - see "Naming sites" below):
+0. **SimplifyJobs New-Grad list** - `simplify-newgrad-search` CLI (primary). Run it with `-l "CA,NYC,New York,Seattle,WA,Los Angeles,Remote in USA"` and the date tiers (`--jobage 1`, then `7`, then `30`), once per query category keyword (`-q "software engineer"`, `-q "full stack"`, `-q "engineer"` with `--section ml`). It already drops rows marked no-sponsorship / US-citizens-only and closed ones. Its `url` is the employer's own posting.
 1. **Employer job boards** - Ashby (`jobs.ashbyhq.com/<company>`), Lever (`jobs.lever.co/<company>`), Greenhouse (`boards-api.greenhouse.io/v1/boards/<company>/jobs`), and company careers pages: allowed, and they carry the original posting date and the full text, including sponsorship wording. Found through WebSearch with company names; `site:` filters on these hosts are unreliable.
 2. **SimplyHired** (`simplyhired.com/search`, `simplyhired.com/job/...`) - allowed; WebSearch fallback until a CLI exists.
 3. **Indeed / hiring.cafe** - search results only (their job pages are disallowed): use a hit only to identify company + role, then find the employer's own posting.
 4. **LinkedIn / Handshake** - never fetched; the user browses and pastes links or text.
 
-Disabled portal CLIs: `linkedin-search` (robots.txt disallows Claude-User), `freehire-search` and the Danish portals (`enabled: false` in their SKILL.md).
+Enabled portal CLIs: `simplify-newgrad-search`. Disabled: `linkedin-search` (robots.txt disallows Claude-User), `freehire-search` and the Danish portals (`enabled: false` in their SKILL.md).
 
 ### Naming sites
 

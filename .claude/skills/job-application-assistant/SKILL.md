@@ -2,11 +2,11 @@
 name: job-application-assistant
 description: >
   Assists with US job applications: evaluating job postings (visa sponsorship first), tailoring
-  1-page resumes, writing cover letters when a posting asks, and preparing for interviews. Triggers
+  1-page resumes, writing cover letters, and preparing for interviews. Triggers
   on keywords like: job posting, job application, CV, resume, cover letter, interview prep, job fit,
   career, application, apply, sponsorship, OPT, H-1B
 allowed-tools: Read, Glob, Grep, WebFetch, WebSearch, Edit, Write, AskUserQuestion
-framework_version: 1.4.0
+framework_version: 1.4.1
 ---
 
 # Job Application Assistant
@@ -37,15 +37,15 @@ When the user provides a job posting (URL or text), follow this workflow:
 - Use the active `us-onepage` template (exactly 1 page; sections Professional Experience, Projects, Education, Technical Skills; no summary)
 - Adjust: top bullets of the most recent role, project order, bolded keywords, skills order; every bullet in XYZ form with metrics from the profile only
 
-### Step 3: Write Cover Letter (only when the posting asks for one)
-- Skip this step unless the posting requires or invites a cover letter; then leave `cover_letter_file` empty in Step 3b
+### Step 3: Write Cover Letter (by default)
+- Draft one for every application - the need usually only shows on the application form. Skip only when the user says so; then leave `cover_letter_file` empty in Step 3b
 - Follow the writing style rules in `03-writing-style.md` (critical: no em-dashes, no cliches)
 - Follow the template structure in `06-cover-letter-templates.md`
 - Create `cover_letters/cover_<company>_<role>.tex`
 - Ensure the letter connects specific experience to the role requirements
 
 ### Step 3b: Record the Application
-- Run this once the resume exists (and the cover letter, when the posting asked for one).
+- Run this once the resume and cover letter exist.
 - Follow **`/apply` Step 6b** (`.claude/commands/apply.md`) exactly: same header, same match-then-update rule, same `drafted` row, same posting archive, same prohibition on touching `job_scraper/seen_jobs.json`. It is stated there once so the two paths cannot drift. Four of its values are named in `/apply`'s own terms: `cv_file`/`cover_letter_file` are the paths written in Steps 2 and 3 here, `source` is the posting URL from Step 1, `deadline` is the application deadline from the posting text Step 1 keeps verbatim (empty when the posting states none - never guess one), and the posting text item 7 archives is the one Step 1 read.
 - This step exists here because `/scrape` Step 5 routes straight into this skill. Without it, that path writes two documents and records nothing.
 

@@ -1,5 +1,5 @@
 ---
-framework_version: 1.1.0
+framework_version: 1.2.0
 ---
 
 # Cover Letter Templates and Tailoring Guide
@@ -16,7 +16,7 @@ framework_version: 1.1.0
 > - **Fonts:** Lato/Raleway from `cover_letters/OpenFonts/fonts/` (bundled; `\fontspec` paths are relative to `cover_letters/`)
 > - **Page limit:** exactly 1 page(s)
 > - **Output file:** `cover_letters/cover_<company>_<role>.tex`; `cover.cls` and `OpenFonts/` are already in that directory
-> - **When:** only when the posting requires or invites a cover letter (US default is resume only). US conventions: English, Letter paper, "Dear Hiring Manager" when no name is given, closing "Best regards,". Never state or imply US citizenship or permanent residency; when the posting raises work authorization, say plainly "I am on F-1 STEM OPT and will require H-1B sponsorship".
+> - **When:** for every application by default - whether one is wanted usually only shows on the application form. Skip only when the user says so. US conventions: English, Letter paper, "Dear Hiring Manager" when no name is given, closing "Best regards,". Never state or imply US citizenship or permanent residency; when the posting raises work authorization, say plainly "I am on F-1 STEM OPT and will require H-1B sponsorship".
 <!-- END ACTIVE-TEMPLATE -->
 
 ## Template: Custom cover.cls (XeLaTeX)

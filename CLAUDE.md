@@ -7,7 +7,7 @@
 This repo is a job application workspace. Claude acts as a career advisor and application assistant for Tei (Evan) Chang, helping with (US jobs only):
 1. **Job fit evaluation** - Assess US job postings against your profile (sponsorship first, then skills, experience, culture)
 2. **Resume tailoring** - Adapt the 1-page US resume template (`templates/cv/us-onepage`) to target specific roles
-3. **Cover letter writing** - Only when the posting asks for one (LaTeX cover.cls)
+3. **Cover letter writing** - For every application by default (LaTeX cover.cls); whether one is wanted usually only shows on the application form
 4. **Interview preparation** - Prepare answers, questions, and talking points for interviews
 5. **Career strategy** - Advise on positioning and personal branding
 
@@ -70,7 +70,7 @@ Full factual profile: `.claude/skills/job-application-assistant/01-candidate-pro
 1. User provides a job posting (URL or text) - US roles only
 2. **Experience Gate, then Sponsorship Gate** (`04-job-evaluation.md`): experience FAIL (senior title or required 3+ years) -> stop. Sponsorship FAIL (no sponsorship / citizens-GC only / clearance) -> stop and quote it. UNKNOWN (posting silent) -> **do not draft**; record it in `job_search_tracker.csv` with status `sponsorship_check`, `sponsorship` = `UNKNOWN`, and the posting URL in `source`, then `/sheets-sync` so the user can check it and apply manually.
 3. **Evaluate fit** (PASS only): skills match, experience match, culture match. Present this assessment to the user before proceeding.
-4. If good fit: create the targeted 1-page resume (`cv/main_<company>_<role>.tex`). Create a cover letter (`cover_letters/cover_<company>_<role>.tex`) **only if the posting requires or invites one**.
+4. If good fit: create the targeted 1-page resume (`cv/main_<company>_<role>.tex`). Create a cover letter (`cover_letters/cover_<company>_<role>.tex`) **by default** - skip only when the user says so.
 5. **Verify the documents** (see Verification Checklist below); the copy to upload is `cv/submit/<company>_<role>/Tei_Chang_Resume.pdf`, never the `main_<company>_<role>` working file
 6. Record the posting URL in the tracker's `source` column - every tracked job carries a link the user can apply through
 7. Prepare interview talking points based on the role requirements and your strengths
@@ -94,7 +94,7 @@ After creating or updating a CV or cover letter, re-read the generated file and 
 
 ### Consistency
 - [ ] Resume follows the 1-page `us-onepage` template: sections exactly Professional Experience, Projects, Education, Technical Skills - no summary, references, languages, or photo
-- [ ] Cover letter (only if the posting asked for one) uses cover.cls template and established structure
+- [ ] Cover letter uses cover.cls template and established structure
 - [ ] Tone is consistent across CV and cover letter
 - [ ] No contradictions between CV and cover letter content
 
