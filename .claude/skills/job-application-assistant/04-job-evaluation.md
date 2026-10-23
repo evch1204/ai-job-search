@@ -1,5 +1,5 @@
 ---
-framework_version: 1.5.0
+framework_version: 1.5.1
 ---
 
 # Job Evaluation Framework
@@ -60,6 +60,8 @@ Recency decides priority, and past a month the job is not worth an application:
 | 8-30 days ago | Lower priority, flagged with its age |
 | More than 30 days ago | **Skip** - do not draft; mention it only if the user asks |
 | Unknown | Treat as 8-30 days and say "date unknown"; never infer from when it was first seen |
+
+**Which date counts: the employer's.** LinkedIn and other aggregators re-date reposted jobs, so a months-old opening can show as posted today. When the employer's own careers/ATS page (Greenhouse, Ashby, Lever, Workday, company site) states a posting date - usually schema.org `datePosted` - that date wins over the aggregator's. Use the aggregator date only when the employer page shows none, and say so. Example: a LinkedIn "Oct 20" Notion role was first posted Jul 6 on Ashby, so it is >30 days and skipped.
 
 `/scrape` searches today first, then the past week, then the past month; `/rank` sorts by these tiers before score; `/apply` states the posting's age in Step 1 and stops on a posting older than 30 days unless the user overrides.
 
