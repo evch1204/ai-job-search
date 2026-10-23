@@ -127,15 +127,17 @@ def classify_posting_host(url_str: str, installed_portals: set[str] | None = Non
     if not host:
         return "unverified", ""
 
-    # Check installed portal boards (exact match or subdomain match)
-    for portal in installed_portals:
-        if host == portal or host.endswith(f".{portal}"):
-            return "installed_portal", host
-
-    # Check known official ATS apexes (exact match or subdomain match)
+    # Known official ATS apexes first (exact match or subdomain match): an
+    # employer's own applicant system is the stronger provenance, even when a
+    # portal CLI (company-boards-search) also reads that host.
     for apex in KNOWN_ATS_APEXES:
         if host == apex or host.endswith(f".{apex}"):
             return "official_ats", host
+
+    # Then installed portal boards (exact match or subdomain match)
+    for portal in installed_portals:
+        if host == portal or host.endswith(f".{portal}"):
+            return "installed_portal", host
 
     return "unverified", host
 
@@ -269,7 +271,8 @@ class InstalledPortalsAreVerifiedTests(unittest.TestCase):
                 for url in (f"https://{host}/job/1", f"https://www.{host}/job/1", f"https://sub.{host}/job/1"):
                     with self.subTest(portal=skill.name, url=url, enabled=portal_enabled(skill)):
                         tier, _ = classify_posting_host(url)
-                        self.assertEqual(tier, "installed_portal", f"{url} classified as {tier}")
+                        # Verified either way; an ATS host a portal also reads ranks as official_ats.
+                        self.assertIn(tier, ("installed_portal", "official_ats"), f"{url} classified as {tier}")
 
     def test_portal_hosts_are_registrable_names_without_www(self):
         for skill in installed_portal_skills():

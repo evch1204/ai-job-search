@@ -74,6 +74,7 @@ Before proceeding to drafting, inspect the posting URL's hostname to verify prov
    - `smartrecruiters.com`
    - `workable.com`
    *Look-alike parsing:* the host must match the apex exactly or end with `.<apex>`. Look-alike prefix tricks (e.g. `evil-greenhouse.io`), suffix spoofing (e.g. `job-boards.greenhouse.io.evil.com`), userinfo tricks (`https://greenhouse.io@evil.com/`), and unfamiliar subdomains fail closed and must not be classified as an official ATS.
+   An official ATS host classifies as **official ATS** even when an installed portal (`company-boards-search`) also reads it - the employer's own applicant system is the stronger provenance.
 3. **Neither (Unverified host):** name the host plainly in the evaluation output as unverified (`⚠ Unverified source host: <hostname> - not an installed portal board or known ATS apex`). Alert the user to verify the employer and link legitimacy before committing time and tokens to drafting.
 
 Present the evaluation to the user with:

@@ -1,0 +1,6 @@
+{"jobs": [
+ {"id": 1, "title": "Software Engineer, New Grad", "absolute_url": "https://boards.greenhouse.io/acme/jobs/1", "location": {"name": "San Francisco, CA"}, "first_published": "2026-10-22T10:00:00-04:00", "updated_at": "2026-10-23T10:00:00-04:00", "content": "&lt;p&gt;We are unable to sponsor visas for this role.&lt;/p&gt;"},
+ {"id": 2, "title": "Software Engineer I", "absolute_url": "https://boards.greenhouse.io/acme/jobs/2", "location": {"name": "Remote - Canada"}, "first_published": "2026-10-22T10:00:00-04:00", "content": ""},
+ {"id": 3, "title": "Senior Software Engineer", "absolute_url": "https://boards.greenhouse.io/acme/jobs/3", "location": {"name": "New York, NY"}, "first_published": "2026-10-22T10:00:00-04:00", "content": ""},
+ {"id": 4, "title": "Backend Software Engineer", "absolute_url": "https://boards.greenhouse.io/acme/jobs/4", "location": {"name": "Seattle, WA • Remote - USA"}, "first_published": "2026-08-01T10:00:00-04:00", "content": "&lt;p&gt;Visa sponsorship is available for this position.&lt;/p&gt;"}
+]}

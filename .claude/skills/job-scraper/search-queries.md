@@ -15,13 +15,20 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 **Robots rule first:** never fetch a page whose robots.txt disallows Claude's agent (`Claude-User`) - check with `python3 tools/robots_check.py <url>`. As checked on 2026-10-23 that rules out LinkedIn job pages (search, detail and `/jobs/view/`), `app.joinhandshake.com`, `hiring.cafe/viewjob/...` and `indeed.com/viewjob`. Postings from those sites reach the workflow only when the user brings them in, and then `/apply` reads the **employer's own copy** instead.
 
 Sources, searched in this order (the user can name any subset - see "Naming sites" below):
-0. **SimplifyJobs New-Grad list** - `simplify-newgrad-search` CLI (primary). Run it with `-l "CA,NYC,New York,Seattle,WA,Los Angeles,Remote in USA"` and the date tiers (`--jobage 1`, then `7`, then `30`), once per query category keyword (`-q "software engineer"`, `-q "full stack"`, `-q "engineer"` with `--section ml`). It already drops rows marked no-sponsorship / US-citizens-only and closed ones. Its `url` is the employer's own posting.
-1. **Employer job boards** - Ashby (`jobs.ashbyhq.com/<company>`), Lever (`jobs.lever.co/<company>`), Greenhouse (`boards-api.greenhouse.io/v1/boards/<company>/jobs`), and company careers pages: allowed, and they carry the original posting date and the full text, including sponsorship wording. Found through WebSearch with company names; `site:` filters on these hosts are unreliable.
-2. **SimplyHired** (`simplyhired.com/search`, `simplyhired.com/job/...`) - allowed; WebSearch fallback until a CLI exists.
+0. **SimplifyJobs New-Grad list** - `simplify-newgrad-search` CLI. Run it with `-l "CA,NYC,New York,Seattle,WA,Los Angeles,Remote in USA"` and the date tiers (`--jobage 1`, then `7`, then `30`), once per query keyword (`-q "software engineer"`, `-q "full stack"`, `-q "engineer"` with `--section ml`). It already drops rows marked no-sponsorship / US-citizens-only and closed ones. Its `url` is the employer's own posting.
+1. **Company job boards** - `company-boards-search` CLI over the ~70 employers in its `companies.json` (Greenhouse, Lever, Ashby). Run with `-l "CA,San Francisco,New York,NY,Seattle,WA,Los Angeles,Remote" --check-sponsorship` and the date tiers, once per keyword: `-q "software engineer"`, `-q "full stack"`, `-q "frontend"`, `-q "backend"`, `-q "machine learning"`, `-q "ai engineer"`, `-q "new grad"`. Use specific keywords - a bare `engineer` pulls in sales/solutions/mechanical roles. It drops senior/staff/lead/intern titles, non-US places and descriptions that refuse sponsorship (`meta.droppedNoSponsor` gives the count for the summary). To cover a new employer, add it to `companies.json` (see that skill's SKILL.md).
+2. **Web job boards (no CLI - fetch listing pages, best effort)** - all allow Claude's agent in robots.txt (checked 2026-10-23). Fetch with `python3 tools/fetch_page.py '<url>' --out <file>` (it enforces robots.txt) or WebFetch, read job titles + links, then follow each promising one to the **employer's own posting**:
+   - **Built In** - `https://www.builtinsf.com/jobs/dev-engineering/entry-level`, `https://www.builtinnyc.com/jobs/dev-engineering/entry-level`, `https://www.builtinseattle.com/jobs/dev-engineering/entry-level`, `https://www.builtinla.com/jobs/dev-engineering/entry-level`, `https://builtin.com/jobs/remote/dev-engineering/entry-level`
+   - **YC companies** - `https://www.ycombinator.com/jobs/role/software-engineer` (Work at a Startup details may need the user's login - then just use company + role)
+   - **Wellfound** - `https://wellfound.com/role/l/software-engineer/san-francisco` (and `/new-york`, `/seattle`, `/los-angeles`, `/remote`)
+   - **jobright.ai**, **Glassdoor**, **Levels.fyi jobs**, **Simplify** (`simplify.jobs/jobs`), **Otta / Welcome to the Jungle**, **Monster** - mostly rendered by JavaScript or behind a login, so a fetch often returns little; use what comes back, never log in
+   - **SimplyHired** - `https://www.simplyhired.com/search?q=software+engineer+new+grad&l=San+Jose%2C+CA` (and the other cities)
 3. **Indeed / hiring.cafe** - search results only (their job pages are disallowed): use a hit only to identify company + role, then find the employer's own posting.
-4. **LinkedIn / Handshake** - never fetched; the user browses and pastes links or text.
+4. **LinkedIn / Handshake / ZipRecruiter / Dice** - never fetched (robots.txt disallows Claude's agent); the user browses and pastes links or text.
 
-Enabled portal CLIs: `simplify-newgrad-search`. Disabled: `linkedin-search` (robots.txt disallows Claude-User), `freehire-search` and the Danish portals (`enabled: false` in their SKILL.md).
+**Sponsorship history (allowed):** `myvisajobs.com` and `h1bdata.info` - `/rank` may look up an employer's H-1B filing count for a `sponsorship_check` row and add it to the note ("~40 H-1B LCAs in 2025"). Evidence, never a PASS.
+
+Enabled portal CLIs: `simplify-newgrad-search`, `company-boards-search`. Disabled: `linkedin-search` (robots.txt disallows Claude-User), `freehire-search` and the Danish portals (`enabled: false` in their SKILL.md).
 
 ### Naming sites
 
