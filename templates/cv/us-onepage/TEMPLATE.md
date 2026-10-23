@@ -22,7 +22,7 @@
   - Only metrics that exist in `01-candidate-profile.md`. If a bullet has no real metric, state the concrete outcome (shipped, adopted, replaced, unblocked) - never invent a number.
 - **Technical Skills:** two lines, `Languages:` and `Frameworks & Tools:`. Reorder so the posting's stack appears first; only list skills the profile supports.
 - **Education:** school + dates on one line, degree on the next, `Relevant Coursework:` line (trim courses irrelevant to the posting if space is needed).
-- Dates use `--` (en dash) and three-letter months.
+- Date ranges use a single ASCII hyphen with spaces (`Jan 2026 - Sep 2026`), never `--`: LaTeX turns `--` into an en dash that ATS date parsers drop (`verify_pdf.py --ascii-dates` checks this). Months are three letters.
 - Keep the `\hypersetup{pdftitle=..., pdfauthor=...}` line filled with the candidate's name: some ATS show the PDF title instead of the filename.
 - The file the user uploads is `cv/submit/<company>_<role>/Tei_Chang_Resume.pdf` (`/apply` Step 5f), never `main_<company>_<role>.pdf`.
 
