@@ -18,6 +18,32 @@ This rule is the input side of the Step 3 Factual Grounding Audit, not a competi
 
 ---
 
+## Fast lane (volume applications)
+
+Use this path instead of Steps 2-5 when the user asks for volume - "fast apply", "apply to #1-#10", "/apply fast <urls>", or a batch from a `/rank` shortlist. It trades per-job tailoring for speed: one of three pre-verified 1-page resumes plus a fill-in cover letter, no reviewer agent, no company research. Save the full path (Steps 2-5) for the user's top matches.
+
+> **Windows:** run these tools as `python`, not `python3`. A python.org install ships no `python3`, so that name reaches the Microsoft Store alias, which either exits 49 with no output (#669) or starts a separate Store Python without the packages `pip` installed (such as pypdf). `.claude/settings.json` allows both spellings.
+
+**Run the batch in parallel, never job by job.** Dispatch the Step 0 fetches as parallel `posting-fetcher` agents (about 5 jobs per agent, all agents in one message), run the H-1B history lookups in parallel, then issue every `fast_lane.py prepare` call in the same message - each job writes its own files, and the tool locks the tracker, so concurrent runs are safe. Only the final summary and `/sheets-sync` wait for the whole batch.
+
+For each job:
+1. **Fetch and gate as usual** - Step 0 (posting-fetcher or `company-boards-search detail`, posting_guard) and Step 1's Posting Age, Experience and Sponsorship gates. A clear dealbreaker drops the job silently (counted in the batch summary).
+2. **Sponsorship UNKNOWN** - look up the employer's H-1B filing history (`myvisajobs.com` / `h1bdata.info`, both allowed). Recent filings (e.g. 5+ LCAs in the last full year) -> draft it, with `--note "likely sponsor: ~N H-1B LCAs in <year> - confirm"`. No history -> no draft; record it as `sponsorship_check` (as Step 1's UNKNOWN path does).
+3. **Pick the variant** by the posting's center of gravity: `fullstack` (web/product/frontend/backend), `ml` (ML/AI/data), `swe` (everything else, infra, generalist).
+4. **Write one hook sentence** about the company from the posting's own text (mission, product, what the team builds) - posting facts only, no outside claims, no em-dashes.
+5. **Assemble and record:**
+
+   ```bash
+   python3 tools/fast_lane.py prepare --company "<Company>" --role "<Role>" --variant <swe|fullstack|ml> \
+       --url "<employer posting URL>" --hook "<sentence>" --sponsorship <PASS|UNKNOWN> --note "<why drafted>" --fit <score>
+   ```
+   It copies the variant to `cv/main_<company>_<role>.tex`, writes and compiles the cover letter (exactly 1 page, or it stops), puts both upload files in `cv/submit/<company>_<role>/`, and appends or refreshes the tracker row as `drafted`.
+6. **After the batch:** one table (company, role, variant, sponsorship note, upload folder), then `/sheets-sync`.
+
+The variants live in `cv/baseline_general_swe.tex`, `cv/variant_fullstack.tex`, `cv/variant_ai_ml.tex` (compiled PDFs beside them). When the profile changes, re-tailor and recompile them once - every fast-lane application picks the change up.
+
+---
+
 ## Step 0: Parse Input
 
 - If `$ARGUMENTS` looks like a URL, **dispatch the `posting-fetcher` agent** via the Agent tool (`subagent_type: posting-fetcher`, the shipped definition in `.claude/agents/posting-fetcher.md`: it can read and fetch but not edit or write, so the component that touches the raw web page has no way to act on it). Pass it the URL only - no profile data, no pasted posting text. It discovers installed portals itself, follows the escalation order below, runs `tools/posting_guard.py` on whatever it retrieved, and returns the gate's verdict, its findings, the extracted metadata and the **cleaned posting text**. The escalation order it applies, from `.claude/skills/job-application-assistant/09-web-research.md`:
@@ -53,7 +79,6 @@ Before anything else, state the posting's age from its posted date - the employe
 
 Using the framework from `04-job-evaluation.md`, evaluate the job posting against the candidate's profile. If the salary lookup tool is configured, run:
 
-> **Windows:** run these tools as `python`, not `python3`. A python.org install ships no `python3`, so that name reaches the Microsoft Store alias, which either exits 49 with no output (#669) or starts a separate Store Python without the packages `pip` installed (such as pypdf). `.claude/settings.json` allows both spellings.
 
 ```bash
 python3 salary_lookup.py "<Company Name>" --json

@@ -14,6 +14,10 @@ Confirm the Gmail MCP tools (`mcp__claude_ai_Gmail__*`) are available. If not, t
 
 ---
 
+## Candidate inboxes
+
+Application email arrives at **changtei1204@gmail.com** (the address on every resume and cover letter) and **evanchang1204@gmail.com**. The Gmail connector reads one account, so the other forwards into it (Gmail Settings -> Forwarding and POP/IMAP). Match messages addressed to either address; a forwarded message keeps the original recipient in its headers.
+
 ## Step 1: Parse Input
 
 `$ARGUMENTS` may contain:

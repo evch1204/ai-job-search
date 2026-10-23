@@ -20,6 +20,23 @@ Everything runs inside Claude Code, opened in this folder. You type slash comman
 | 5. Submit yourself | open the link | You submit the application on the company site |
 | 6. Record it | `/outcome <company>` | Moves the row to `applied` (and later interview / offer / rejected) |
 
+## Gmail sync (automatic status updates)
+
+One-time setup - you do these steps; Claude never signs in for you:
+1. In Claude, open **Settings -> Connectors** and connect **Gmail** with **changtei1204@gmail.com** (the address on your resumes - recruiters reply there)
+2. In **evanchang1204@gmail.com**: Gmail **Settings -> See all settings -> Forwarding and POP/IMAP -> Add a forwarding address** -> `changtei1204@gmail.com`, confirm the code that arrives, then choose "Forward a copy" (or a filter that forwards only job mail)
+3. Start a **new** Claude Code session in this folder (connectors load at session start)
+4. Say **"check my email for application updates"** (or `/gmail-sync`). It reads confirmations, interview invites and rejections, **proposes** status changes, and writes only what you approve - it never sends email
+
+Run it every few days; then `/sheets-sync` (or "update my sheet") mirrors the new statuses.
+
+## Fast lane (apply at volume)
+
+- Say **"fast apply 1-10"** after `/rank` (or "fast apply <links>"). Each job gets one of three ready-made 1-page resumes (General SWE, Full-stack, AI/ML) and a short cover letter, with no per-job research - seconds per job
+- Sponsorship not mentioned? The fast lane checks the company's H-1B filing history: recent filings -> drafted with a "likely sponsor" note; none -> left as **Check sponsorship**
+- Use the full `/apply` (deep tailoring + reviewer) for your top ~10%
+- The three resume versions are `cv/baseline_general_swe`, `cv/variant_fullstack`, `cv/variant_ai_ml` - say "update my fast-lane resumes" after your profile changes
+
 ## Handshake postings
 
 Handshake's logged-in job pages block AI agents (its robots.txt disallows `Claude-User`), so `/scrape` cannot search them, even with your login. Use it like this instead:
