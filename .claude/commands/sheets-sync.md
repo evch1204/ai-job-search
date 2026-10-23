@@ -31,11 +31,14 @@ The command is **silently optional**: when the sheet is not reachable, the outco
      "header_row": 3,
      "key_column": "L",
      "last_sync": "YYYY-MM-DD",
-     "written_status": { "<key>": "<sheet status value last written by this command>" }
+     "written_status": { "<key>": "<sheet status value last written by this command>" },
+     "ai_tab": "JOB APPLICATION AI",
+     "ai_header_row": 1
    }
    ```
+   **Two tabs.** `tab` is the user's original tracker tab (the one-time import lives there); `ai_tab` holds every row this workflow added since. Rows whose Key is already in `tab` keep being updated **there**, in that tab's layout. Every other row is appended to `ai_tab`, in the layout below. When `ai_tab` is absent, everything uses `tab` (the original behaviour).
    If missing, ask the user for the sheet URL (the ID is the string between `/d/` and `/edit`), confirm the tab name, and write the file.
-3. One cheap verification call: `get_values` on `<tab>!A<header_row>:M<header_row>`. An auth error → tell the user to re-authenticate via `/mcp` and stop. Never retry in a loop, never start an OAuth flow from this command.
+3. One cheap verification call: `get_values` on `<tab>!A<header_row>:M<header_row>` (and `<ai_tab>!A<ai_header_row>:N<ai_header_row>` when `ai_tab` is set). An auth error → tell the user to re-authenticate via `/mcp` and stop. Never retry in a loop, never start an OAuth flow from this command.
 
 ---
 
@@ -55,7 +58,7 @@ It prints one JSON object per tracker row with a stable `key` and the `sheet_sta
 
 ## Step 3: Read the Sheet
 
-`get_values` on `<tab>!A<header_row+1>:M` (all data rows). Build a map `Key (column L) → sheet row number`. Note the highest numeric value in column A for numbering new rows.
+`get_values` on `<tab>!A<header_row+1>:M` (all data rows) and, when set, `<ai_tab>!A<ai_header_row+1>:N`. Build a map `Key → (tab, sheet row number)` from column L of `tab` and column N of `ai_tab`. Note the highest numeric value in column A for numbering new rows.
 
 **Sheet layout** (the user's own columns - never rename, reorder, or reformat them):
 
@@ -75,6 +78,25 @@ It prints one JSON object per tracker row with a stable `key` and the `sheet_sta
 | L | Key | sync - dedup anchor, never edited by hand |
 | M | Sponsorship | sync - tracker `sponsorship` (`PASS` / `UNKNOWN`, blank when unrecorded); fills when blank or when the tracker value changed |
 
+**AI tab layout** (`ai_tab`; same ownership rules as the matching columns above - user-owned columns are never overwritten on existing rows):
+
+| Col | Header | Owner |
+|---|---|---|
+| A | # | sync on append only |
+| B | Company | sync on append only |
+| C | Role | sync on append only |
+| D | Date applied | sync - fills when blank or when status leaves `drafted` |
+| E | Location | **user** - sync writes only on append |
+| F | Work type | **user** - sync writes only on append |
+| G | Status | sync - see Step 4; also `Skipped` (a `withdrawn` row the pipeline skipped) |
+| H | Reason | sync - `status_reason` from the tool: why the row has its status (skipped as too old, sponsorship unknown, user override); rewritten whenever it changes |
+| I | Link / email | sync - fills only when blank, from tracker `source` |
+| J | Sponsorship | sync - as column M of `tab` |
+| K | 1st interview | **user** - never written |
+| L | Final interview | **user** - never written |
+| M | Notes | **user** - sync writes only on append |
+| N | Key | sync - dedup anchor |
+
 First run only: if L`<header_row>` is empty, write `Key` there; if M`<header_row>` is empty, write `Sponsorship` there. If the Status column's dropdown has no `No response` option, tell the user once that `/outcome stale` can produce that status and offer to add it to the dropdown; add it only on yes. The same applies to a missing `Check sponsorship` option, which `sponsorship_check` rows (US postings with unconfirmed sponsorship, recorded for the user to check and apply to manually) need.
 
 ---
@@ -83,12 +105,13 @@ First run only: if L`<header_row>` is empty, write `Key` there; if M`<header_row
 
 For each sync-set row:
 
-1. **Key not in the sheet → append** a row to `<tab>!A:M`: `#` = max + 1, Company, Role, Date applied (`MM/DD/YYYY`; blank while `drafted`), Location and Work type from the archived posting at `documents/applications/<company>_<role>/job_posting.md` when it states them (else blank / `Unknown`), Status = `sheet_status`, Link = `source`, Notes blank, Key, Sponsorship = `sponsorship`. The Link is what the user applies through, so never drop it. Use `USER_ENTERED` so the date becomes a real date the dashboard formulas can count.
-2. **Key found → update cells only where needed:**
+1. **Key not in either tab → append** a row to `<ai_tab>!A:N` in the AI tab layout (or `<tab>!A:M` when no `ai_tab` is set): `#` = max + 1, Company, Role, Date applied (`MM/DD/YYYY`; blank while `drafted`), Location and Work type from the archived posting at `documents/applications/<company>_<role>/job_posting.md` when it states them (else blank / `Unknown`), Status = `sheet_status`, Reason = `status_reason` (AI tab only), Link = `source`, Notes blank, Key, Sponsorship = `sponsorship`. The Link is what the user applies through, so never drop it. Use `USER_ENTERED` so the date becomes a real date the dashboard formulas can count.
+2. **Key found → update cells only where needed, in the tab and columns where it was found:**
    - **Status (G):** if the sheet value already means the same thing as the tracker (`Phone screen` and `Interviewing` both mean `interview` - leave `Phone screen` alone), skip. Otherwise, **manual-edit guard:** if the current sheet value differs from `written_status[key]` (the user changed it by hand since the last sync), **do not overwrite** - list it under Conflicts and suggest `/outcome <company>` to record the change properly. Else write `sheet_status`.
    - **Date applied (D):** write when blank, or when the tracker row just moved out of `drafted` (date = the tracker `date`).
    - **Link (J):** write only when blank and `source` is non-empty.
-   - **Sponsorship (M):** write when blank and `sponsorship` is non-empty, or when it differs from the tracker (`UNKNOWN` -> `PASS` after the user confirmed sponsorship and re-ran `/apply`).
+   - **Reason (AI tab, H):** write `status_reason` whenever it differs from the cell.
+   - **Sponsorship (M, or J in the AI tab):** write when blank and `sponsorship` is non-empty, or when it differs from the tracker (`UNKNOWN` -> `PASS` after the user confirmed sponsorship and re-ran `/apply`).
    - Never touch E, F, H, I, K on an existing row.
 3. Record every Status value you write (or found already equivalent) in `written_status[key]`.
 4. Batch writes (`update_values` with several ranges per call). Rows the user added by hand (empty Key) are invisible to this command - never modify or number-shift them.

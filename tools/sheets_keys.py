@@ -39,6 +39,7 @@ TRACKER_HEADER = [
 SHEET_TO_TRACKER = {
     "to apply": "drafted",
     "check sponsorship": "sponsorship_check",
+    "skipped": "withdrawn",
     "applied": "applied",
     "phone screen": "interview",
     "interviewing": "interview",
@@ -64,6 +65,34 @@ TRACKER_TO_SHEET = {
     "no response": "No response",
     "offer declined": "Withdrawn",
 }
+
+
+# A `withdrawn` row the pipeline skipped (too old, ineligible) - rather than one the
+# user withdrew - carries a "skipped: <why>" note; the sheet shows it as Skipped.
+SKIP_PREFIX = "skipped:"
+# Note segments that explain a row's current status, newest wins.
+REASON_PREFIXES = ("skipped:", "withdrawn:", "rejected", "user override:", "user approved:")
+
+
+def note_segments(notes: str) -> list[str]:
+    return [s.strip() for s in (notes or "").split(";") if s.strip()]
+
+
+def sheet_status_for(status: str, notes: str) -> str:
+    status = (status or "").strip().lower()
+    if status == "withdrawn" and any(s.lower().startswith(SKIP_PREFIX) for s in note_segments(notes)):
+        return "Skipped"
+    return TRACKER_TO_SHEET.get(status, "Applied")
+
+
+def status_reason(status: str, notes: str) -> str:
+    """Why the row has its status, for the sheet's Reason column."""
+    for seg in reversed(note_segments(notes)):
+        if seg.lower().startswith(REASON_PREFIXES):
+            return seg
+    if (status or "").strip().lower() == "sponsorship_check":
+        return "posting does not mention visa sponsorship - check before applying"
+    return ""
 
 
 def slug(text: str) -> str:
@@ -116,7 +145,8 @@ def cmd_rows(tracker: Path) -> None:
             "role": r.get("role", ""),
             "date": r.get("date", ""),
             "status": status,
-            "sheet_status": TRACKER_TO_SHEET.get(status.lower(), "Applied"),
+            "sheet_status": sheet_status_for(status, r.get("notes", "")),
+            "status_reason": status_reason(status, r.get("notes", "")),
             "source": r.get("source", ""),
             "sponsorship": r.get("sponsorship") or "",
             "channel": r.get("channel", ""),
