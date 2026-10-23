@@ -220,6 +220,8 @@ Summarize what was recorded:
 >
 > [Calibration suggestion from Step 5, if triggered]
 
+If `job_scraper/sheets_sync.json` exists, run `/sheets-sync` now so the Google Sheet mirror shows the new status.
+
 If the update recorded an upcoming or newly scheduled interview stage, also suggest:
 
 > "Interview coming up? `/interview <company>` builds a prep pack for that stage from this application's archive - the posting, the documents you submitted, and any feedback recorded from earlier rounds."
