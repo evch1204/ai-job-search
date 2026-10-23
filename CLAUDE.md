@@ -58,7 +58,7 @@ Full factual profile: `.claude/skills/job-application-assistant/01-candidate-pro
 ### Deal-breakers
 - Role located outside the United States
 - Posting says no visa sponsorship, US citizens / green card only, or requires a security clearance / ITAR "US person" status
-- Senior / staff roles requiring 4+ years of experience
+- Roles needing more than 0-2 years: Senior / Staff / Lead / Principal titles, level III+, or a **required** 3+ years (see the Experience Gate in `04-job-evaluation.md`); a required 2 years or a level II title is a flag, not a deal-breaker
 
 ## Repo Structure
 - `cv/` - LaTeX resume variants (1-page US template `templates/cv/us-onepage`; baseline `cv/baseline_general_swe.tex`)
@@ -68,10 +68,10 @@ Full factual profile: `.claude/skills/job-application-assistant/01-candidate-pro
 
 ## Workflow for New Job Applications
 1. User provides a job posting (URL or text) - US roles only
-2. **Sponsorship Gate first** (`04-job-evaluation.md`): FAIL (no sponsorship / citizens-GC only / clearance) -> stop and quote it. UNKNOWN (posting silent) -> **do not draft**; record it in `job_search_tracker.csv` with status `sponsorship_check`, `sponsorship` = `UNKNOWN`, and the posting URL in `source`, then `/sheets-sync` so the user can check it and apply manually.
+2. **Experience Gate, then Sponsorship Gate** (`04-job-evaluation.md`): experience FAIL (senior title or required 3+ years) -> stop. Sponsorship FAIL (no sponsorship / citizens-GC only / clearance) -> stop and quote it. UNKNOWN (posting silent) -> **do not draft**; record it in `job_search_tracker.csv` with status `sponsorship_check`, `sponsorship` = `UNKNOWN`, and the posting URL in `source`, then `/sheets-sync` so the user can check it and apply manually.
 3. **Evaluate fit** (PASS only): skills match, experience match, culture match. Present this assessment to the user before proceeding.
 4. If good fit: create the targeted 1-page resume (`cv/main_<company>_<role>.tex`). Create a cover letter (`cover_letters/cover_<company>_<role>.tex`) **only if the posting requires or invites one**.
-5. **Verify the documents** (see Verification Checklist below)
+5. **Verify the documents** (see Verification Checklist below); the copy to upload is `cv/submit/<company>_<role>/Tei_Chang_Resume.pdf`, never the `main_<company>_<role>` working file
 6. Record the posting URL in the tracker's `source` column - every tracked job carries a link the user can apply through
 7. Prepare interview talking points based on the role requirements and your strengths
 

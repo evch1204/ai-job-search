@@ -1,5 +1,5 @@
 ---
-framework_version: 1.3.0
+framework_version: 1.4.0
 ---
 
 # Job Evaluation Framework
@@ -29,6 +29,21 @@ Read the posting's work-authorization / sponsorship / "who can apply" / EEO-foot
 **Report a sponsorship FAIL to the user with the quoted source** rather than silently dropping the role — they may know something (a contact, a policy change) the posting does not show.
 
 A role that is FAIL or UNKNOWN is not scored and not drafted. Everything below applies only to roles that PASS.
+
+## Experience Gate (0-2 years) — run before scoring
+
+The candidate has about **1 year** of full-time experience (Jan-Sep 2026) plus internships, so only roles open to **0-2 years** are in scope. Its verdict is tracked downstream as `experience_gate` (PASS/FAIL/FLAG) with a supporting `experience_note`; `/rank` treats a FAIL as a shortlist veto and `/apply` stops on it.
+
+Read the posting's **required** qualifications (not "preferred" / "nice to have") and its title:
+
+| Posting says | Verdict |
+|---|---|
+| Title says Senior, Sr., Staff, Principal, Lead, Manager, Director, Architect, Head of, or a level III+ (e.g. "Software Engineer III", "SDE III", "L5+") | **FAIL** - quote the title |
+| **Required** minimum of **3 or more years** ("3+ years", "minimum 4 years", "5-7 years") | **FAIL** - quote the requirement |
+| New grad, entry level, early career, university graduate, "Software Engineer I", 0-1 years, or no years stated for a non-senior title | **PASS** |
+| Required minimum of exactly **2 years** ("2+ years"), a level II title ("SDE II", "Software Engineer II") with no years stated, or 3+ years listed only as **preferred** | **FLAG** - score and draft normally, but surface the stretch to the user with the quoted line |
+
+Use the **minimum** of a range ("2-4 years" -> 2 -> FLAG). "Or equivalent experience" does not lower the stated number. Internships and project work do not count toward the 1 year, so never present them as extra years of full-time experience.
 
 ## Language Gate — run before scoring
 

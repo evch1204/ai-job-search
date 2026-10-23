@@ -903,6 +903,22 @@ class SponsorshipGate(Apply):
         self.assertEqual(out["errors"][0]["key"], "a")
 
 
+    def test_experience_fail_is_vetoed_and_flag_keeps_its_note(self):
+        self.write_state({"a": entry(), "b": entry(company="Beta")})
+        out = self.run_tool("apply", "--results", self.results([
+            self._scored(key="a", experience_gate="FAIL", experience_note='"5+ years required"', sponsorship_gate="PASS"),
+            self._scored(key="b", experience_gate="FLAG", experience_note='"2+ years"', sponsorship_gate="PASS"),
+        ]))
+        self.assertEqual([r["key"] for r in out["vetoed"]], ["a"])
+        self.assertEqual([r["key"] for r in out["ranked"]], ["b"])
+        self.assertEqual(self.read_state()["b"]["experience_note"], '"2+ years"')
+        self.assertEqual(out["ranked"][0]["experience_gate"], "FLAG")
+
+    def test_unknown_experience_spelling_is_an_error(self):
+        self.write_state({"a": entry()})
+        out = self.run_tool("apply", "--results", self.results([self._scored(experience_gate="SENIOR")]), expect=1)
+        self.assertIn("experience_gate", out["errors"][0]["error"])
+
 class TrackUnknown(RankStateCase):
     """Step 4b: UNKNOWN-sponsorship jobs become `sponsorship_check` tracker rows."""
 

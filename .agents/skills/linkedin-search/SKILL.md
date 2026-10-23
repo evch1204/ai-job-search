@@ -52,6 +52,7 @@ Key flags:
 - `--jobage <days>` — posted within N days: `1`, `7`, `14`, `30`. Omit for all postings.
 - `--jobage-minutes <n>` — posted within N minutes (sub-day precision, e.g. `30`). Conflicts with `--jobage` — pass only one.
 - `--remote <mode>` — `remote`, `hybrid`, or `onsite` (workplace-type filter).
+- `--experience <levels>` — comma list of `internship`, `entry`, `associate`, `mid-senior`, `director`, `executive` (LinkedIn's experience-level filter). `entry,associate` targets roughly 0-2 years.
 - `--page <n>` — page number (1-indexed, 10 results per page).
 - `--limit <n>` / `-n <n>` — cap total results emitted (client-side).
 - `--format json|table|plain` — default `json`.

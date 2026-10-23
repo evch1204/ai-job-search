@@ -418,7 +418,10 @@ def cmd_apply(args) -> int:
             errors.append({"key": key, "error": str(exc)})
             continue
         bad_gate = next(
-            (f for f in ("location_verdict", "language_gate") if result.get(f) and result[f] not in GATE_VERDICTS),
+            (
+                f for f in ("location_verdict", "language_gate", "experience_gate")
+                if result.get(f) and result[f] not in GATE_VERDICTS
+            ),
             None,
         )
         if bad_gate:
@@ -465,6 +468,13 @@ def cmd_apply(args) -> int:
             entry["language_note"] = result.get("language_note")
         # An agent on a pre-gate prompt returns no verdict: leave the field
         # absent (not evaluated) rather than inventing one either way.
+        experience = result.get("experience_gate")
+        if experience:
+            entry["experience_gate"] = experience
+            if experience == "PASS" or not result.get("experience_note"):
+                entry.pop("experience_note", None)
+            else:
+                entry["experience_note"] = str(result["experience_note"])[:200]
         if sponsorship:
             entry["sponsorship_gate"] = sponsorship
             note = result.get("sponsorship_note")
@@ -512,6 +522,8 @@ def cmd_apply(args) -> int:
                 "location_verdict": entry["location_verdict"],
                 "language_gate": entry["language_gate"],
                 "language_note": entry.get("language_note"),
+                "experience_gate": entry.get("experience_gate"),
+                "experience_note": entry.get("experience_note"),
                 "sponsorship_gate": entry.get("sponsorship_gate"),
                 "sponsorship_note": entry.get("sponsorship_note"),
                 "deadline": entry.get("deadline"),
@@ -528,7 +540,7 @@ def cmd_apply(args) -> int:
 
     rows.sort(key=lambda r: (r["score"], r["urgent"]), reverse=True)
     veto = lambda r: (
-        r["location_verdict"] == "FAIL" or r["language_gate"] == "FAIL" or r["sponsorship_gate"] == "FAIL"
+        "FAIL" in (r["location_verdict"], r["language_gate"], r["experience_gate"], r["sponsorship_gate"])
     )
     vetoed = [r for r in rows if veto(r)]
     needs_check = [r for r in rows if not veto(r) and r["sponsorship_gate"] == "UNKNOWN"]

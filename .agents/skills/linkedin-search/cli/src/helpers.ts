@@ -275,6 +275,26 @@ export function minutesToTPR(minutes: number): string | null {
   return `r${minutes * 60}`
 }
 
+const EXPERIENCE_LEVELS: Record<string, string> = {
+  internship: "1",
+  entry: "2",
+  associate: "3",
+  "mid-senior": "4",
+  director: "5",
+  executive: "6",
+}
+
+/**
+ * Experience-level filter (f_E): a comma-separated list such as "entry,associate".
+ * Returns null when any level is unknown or the list is empty, so a typo is
+ * rejected instead of silently searching every seniority.
+ */
+export function experienceFlag(spec: string | undefined): string | null {
+  const levels = (spec || "").split(",").map((s) => s.trim().toLowerCase())
+  if (levels.some((l) => !(l in EXPERIENCE_LEVELS))) return null
+  return [...new Set(levels.map((l) => EXPERIENCE_LEVELS[l]))].sort().join(",")
+}
+
 /** Workplace-type flag: on-site=1, remote=2, hybrid=3. */
 export function workTypeFlag(mode: string | undefined): string | null {
   switch ((mode || "").toLowerCase()) {

@@ -42,9 +42,9 @@ Read the evaluation framework:
 - `.claude/skills/job-application-assistant/04-job-evaluation.md`
 - `.claude/skills/job-application-assistant/01-candidate-profile.md`
 
-### Sponsorship Gate (run first - US roles only)
+### Experience and Sponsorship Gates (run first - US roles only)
 
-Before anything else, apply the **Sponsorship Gate** from `04-job-evaluation.md` to the work-authorization wording extracted in Step 0 (and the location: a role outside the United States is a FAIL here too):
+Before anything else, apply the **Experience Gate** from `04-job-evaluation.md` (0-2 years): a FAIL (senior/staff/lead title, or a required 3+ years) shows the posting-integrity line and the quoted requirement and **stops** - no scoring, drafting, or tracker row; a FLAG is shown in the evaluation and the run continues. Then apply the **Sponsorship Gate** from `04-job-evaluation.md` to the work-authorization wording extracted in Step 0 (and the location: a role outside the United States is a FAIL here too):
 
 - **FAIL** (no sponsorship, US citizens / green card only, clearance, ITAR "US person", or non-US location): show the posting-integrity line, then the quoted wording, and **stop**. Do not score, draft, or write a tracker row.
 - **UNKNOWN** (posting silent on sponsorship, or only "must be authorized to work in the US"): show the posting-integrity line, then say plainly that sponsorship is unconfirmed, and **do not draft**. Write the tracker row now with Step 6b's rules but these values: `status` = `sponsorship_check`, `sponsorship` = `UNKNOWN`, `fit_rating` empty, `cv_file` and `cover_letter_file` empty, `source` = the posting URL, `notes` = `check sponsorship` plus any one-line note (no commas). Skip the posting archive. Then suggest `/sheets-sync` so the row reaches the Google Sheet with its link, and **stop**. If the user then confirms the employer does sponsor, they can re-run `/apply`: the open `sponsorship_check` row is refreshed in place, never duplicated.
@@ -368,6 +368,18 @@ After the final clean compile (and after 5b-5d have passed), delete the intermed
 - **Custom template whose compile command redirects to `build/`:** also `rm -rf cv/build cover_letters/build` (`/add-template` Step 4 already says `/apply` must delete it).
 - **Zero-artifact toolchain (e.g. `typst compile`):** nothing to delete.
 
+### 5f. Submission copies (what the employer sees)
+
+Employers see the uploaded file's name, so never ask the user to upload `main_<company>_<role>.pdf`. After 5b-5e pass, copy the final PDFs into a per-application folder under the candidate's own name:
+
+```bash
+mkdir -p "cv/submit/<company>_<role>"
+cp cv/main_<company>_<role>.pdf "cv/submit/<company>_<role>/Tei_Chang_Resume.pdf"
+cp cover_letters/cover_<company>_<role>.pdf "cv/submit/<company>_<role>/Tei_Chang_Cover_Letter.pdf"   # only when a cover letter was drafted
+```
+
+The folder keeps each application's copy separate, so the same filename never overwrites another job's resume. PDFs are git-ignored, so these stay local. The working files keep their `main_<company>_<role>` names for the tracker.
+
 ---
 
 ## Step 6: Present Final Output
@@ -387,9 +399,10 @@ Summarize 3-5 key decisions made to tailor the application:
 ### Files Created
 List the files written:
 - `cv/main_<company>_<role><CV_EXT>`
-- `cover_letters/cover_<company>_<role><COVER_EXT>`
+- `cover_letters/cover_<company>_<role><COVER_EXT>` (only when the posting asked for a cover letter)
+- **To upload:** `cv/submit/<company>_<role>/Tei_Chang_Resume.pdf` (and `Tei_Chang_Cover_Letter.pdf`, if drafted)
 
-Tell the user: "Both files are ready for your review. Open them to check the final output before compiling."
+Tell the user which file to upload (the `cv/submit/` copy) and to open it once before submitting.
 
 ### Step 6b: Record the Application
 

@@ -13,12 +13,31 @@ Everything runs inside Claude Code, opened in this folder. You type slash comman
 
 | Step | Command | What it does |
 |---|---|---|
-| 1. Find jobs | `/scrape` (or `/scrape broad`, `/scrape AI engineer`) | Searches LinkedIn (Bay Area + US remote) and Indeed, SimplyHired, hiring.cafe, Handshake via web search. Last 14 days, new jobs only. Drops obvious "no sponsorship" / non-US postings |
+| 1. Find jobs | `/scrape` (or `/scrape broad`, `/scrape AI engineer`) | Searches LinkedIn (Bay Area + US remote, entry/associate levels) and Indeed, SimplyHired, hiring.cafe and public Handshake pages via web search. Last 14 days, new jobs only. Drops senior titles and obvious "no sponsorship" / non-US postings |
 | 2. Triage | `/rank` | Reads every new posting, applies the **Sponsorship Gate**, and scores fit. Shows a shortlist with links. UNKNOWN-sponsorship jobs go to your tracker as **Check sponsorship** |
 | 3. Mirror to Sheet | `/sheets-sync` | Pushes new tracker rows to your Google Sheet, with the apply link in **Link / email** and **Sponsorship** in column M |
 | 4. Apply | `/apply <job URL>` (or pick a number after `/rank`) | Re-checks sponsorship, evaluates fit, then writes a tailored 1-page resume `cv/main_<company>_<role>.pdf` (cover letter only if the posting asks), verifies it, and records it as `drafted` |
 | 5. Submit yourself | open the link | You submit the application on the company site |
 | 6. Record it | `/outcome <company>` | Moves the row to `applied` (and later interview / offer / rejected) |
+
+## Handshake postings
+
+Handshake's logged-in job pages block AI agents (its robots.txt disallows `Claude-User`), so `/scrape` cannot search them, even with your login. Use it like this instead:
+
+1. Browse Handshake yourself (filters: Full-time, your graduation year, "Accepts OPT/CPT" / sponsorship filters if your school shows them).
+2. For a job you like, either:
+   - copy the whole posting text and run `/apply` with the text pasted in, or
+   - give me the company and role ("/apply Acme Software Engineer I from Handshake") and I find the employer's own public posting, which `/apply` prefers anyway.
+3. To triage several at once, paste them into the chat and ask "evaluate these against my profile".
+
+## Experience filter (0-2 years)
+
+- `/scrape` asks LinkedIn for entry/associate levels only and drops Senior/Staff/Lead/Principal/level III+ titles before reading them
+- `/rank` and `/apply` read the requirements: a **required** 3+ years is excluded, a required 2 years or a level II title is flagged (still drafted), new grad / 0-1 years passes
+
+## What to upload
+
+`/apply` saves the file to upload as `cv/submit/<company>_<role>/Tei_Chang_Resume.pdf` (plus `Tei_Chang_Cover_Letter.pdf` when the posting asked for one). Upload that copy, not `cv/main_<company>_<role>.pdf`.
 
 ## Sponsorship rules (US, F-1 STEM OPT)
 
