@@ -506,13 +506,12 @@ class PostedDateStalenessSpec(unittest.TestCase):
             "location and language FLAG treatments",
         )
 
-    def test_staleness_is_a_flag_never_a_veto(self):
-        self.assertRegex(
-            self.flat,
-            r"[Aa]ge is a signal, never a veto",
-            "staleness must keep FLAG semantics - the #390 posting was 27 months "
-            "old AND still live, so excluding on age would bury real openings",
-        )
+    def test_age_tiers_flag_this_month_and_veto_past_30_days(self):
+        # This fork's candidate rule: today first, then this week; 8-30 days is
+        # a visible flag, and anything older than a month is excluded.
+        self.assertRegex(self.flat, r"Older than 30 days\*\* - \*\*excluded\*\*")
+        self.assertRegex(self.flat, r"This month\*\* \(8-30 days\) - ⚠ marker")
+        self.assertRegex(self.flat, r"Sort by posting-age tier first")
 
     def test_staleness_never_inferred_for_absent_values(self):
         self.assertRegex(

@@ -112,23 +112,20 @@ Back in the main context, for each scored job:
 
    Any whose deadline has passed becomes `expired`; any within 7 days comes back under `closing_soon` and is listed under a short **Closing soon** heading in Step 5 with its 🔥 marker. This needs no fetch and no agent - it is a date comparison against values already on disk, and it is what finally enforces `/scrape`'s "only open positions" rule beyond the moment of fetching. **An entry with no stored `deadline` is left alone, never guessed at** - most entries predate the column, and inferring a deadline from `first_seen` would retire jobs on a date nobody set. **Parse stored deadlines defensively:** a stored value that is not a `YYYY-MM-DD` date is treated exactly like an absent one - left alone, never compared, never guessed at - and returned under `unparseable_deadlines` with its portal, so the bad value gets traced to its source instead of silently steering the sweep (portals have shipped `"ASAP"`, `DD.MM.YYYY`, and free-text deadline shapes into stored data). Report it once in the Step 5 summary. `--all` re-scores entries of any status including `expired`, so a job the sweep retired - or one Step 4 gave up on as `unreachable` - can still be revived by a later `--all` that re-fetches it and finds the posting live: both automated status changes are reversible, which is what makes them acceptable here at all.
 
-7. **Staleness flag:** a job whose stored `posted_date` is more than **30 days** old at
-   rank time stays in the ranking but carries a visible ⚠ marker with its age spelled out
-   alongside the score (e.g. "⚠ posted 2024-05-13, 27 months ago") - same treatment as a
-   location or language FLAG, for the user to judge. Age is a signal, never a veto: the
-   posting that motivated this rule was 27 months old *and still live*, so excluding on
-   age would wrongly bury real openings - and a stale posting with a future stored
-   `deadline` is still open by the stronger signal, so the flag notes the deadline too
-   rather than contradicting it. This costs no fetch: `posted_date` is already on disk
-   (written by `/scrape` Step 4), and age is re-derived on every run, never persisted.
-   **An entry with no `posted_date` (or `null`) gets no flag and no guess** - entries
-   predating the field simply lack the signal, and inferring age from `first_seen` would
-   flag jobs on a date nobody posted. Rule 6's defensive-parse rule applies wherever a
+7. **Posting-age tiers (the candidate's rule: today first, then this week, nothing older than a month):**
+   derive each job's age from its stored `posted_date` at rank time.
+   - **Today** (posted today or yesterday) - 🆕 marker; these lead the shortlist.
+   - **This week** (2-7 days) - no marker.
+   - **This month** (8-30 days) - ⚠ marker with the age spelled out (e.g. "⚠ posted 2026-10-02, 21 days ago"); still ranked.
+   - **Older than 30 days** - **excluded**, listed under "Excluded" as "posted <date>, <N> days ago". Age is a veto past 30 days, by the candidate's choice: applications to month-old postings rarely get read, so they are not worth a tailored resume. A stored future `deadline` does not rescue it - note the deadline in the Excluded line so the user can override by hand.
+   This costs no fetch: `posted_date` is already on disk (written by `/scrape` Step 4), and age is re-derived on every run, never persisted.
+   **An entry with no `posted_date` (or `null`) gets no flag and no guess** - it is ranked in the "This month" tier with "date unknown" noted, and inferring age from `first_seen` would
+   tier jobs on a date nobody posted. Rule 6's defensive-parse rule applies wherever a
    stored `posted_date` is compared: a value that does not parse as `YYYY-MM-DD` is
    treated exactly like an absent one and reported once in the Step 5 summary with its
    portal.
 
-Sort by overall score (descending), urgency as tiebreaker.
+Sort by posting-age tier first (Today, This week, This month), then by overall score (descending) within a tier, urgency as tiebreaker.
 
 ---
 
@@ -177,9 +174,9 @@ Swept <S> previously ranked entries (<E> newly expired, <C> closing soon).
 
 ### Shortlist
 
-| # | Score | Verdict | Title | Company | Location | Deadline | | URL |
-|---|-------|---------|-------|---------|----------|----------|---|-----|
-| 1 | 78 | Strong Fit | ... | ... | ... | ... | 🔥 | [Link](...) |
+| # | Posted | Score | Verdict | Title | Company | Location | Deadline | | URL |
+|---|--------|-------|---------|-------|---------|----------|----------|---|-----|
+| 1 | 🆕 today | 78 | Strong Fit | ... | ... | ... | ... | 🔥 | [Link](...) |
 
 ### Why these ranked highest
 **1. <Title> at <Company> (78)** - [2-3 strength bullets and the honest gap, from the agent's findings]

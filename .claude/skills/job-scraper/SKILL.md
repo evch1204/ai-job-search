@@ -66,7 +66,7 @@ For each **enabled** portal skill:
 
 1. Read its `SKILL.md` to find the correct `bun run …` invocation and supported flags.
 2. Translate the query terms from `search-queries.md` into that portal's flag format (e.g. `--key`, `--search-string`, `--query`, filter codes — whatever the portal's SKILL.md specifies).
-3. Scope to the last 14 days using the portal's supported recency **filter** flag (`--jobage`, `--since <YYYY-MM-DD>`, etc. — as documented per portal). A portal with **no recency flag** (jobdanmark offers none) still gets scoped: every portal's search output carries a `date` field, so filter client-side — drop results whose `date` is older than 14 days after the call returns, and never invent a flag the portal's SKILL.md does not document (the CLIs reject unknown flags). `--order PublicationDate` is a sort, and a sort is not a filter — pairing it with a `--limit` is a defensible approximation on a portal that offers nothing better (jobnet), but apply the client-side date filter on top all the same.
+3. Scope by posting age in tiers - **today first, then the past 7 days, then the past 30 days; never older** (`04-job-evaluation.md` Posting Age): run each query with the portal's recency filter at 1 day, then 7, then 30, keeping the first tier a hit appears in. Use the portal's supported recency **filter** flag (`--jobage`, `--since <YYYY-MM-DD>`, etc. — as documented per portal). A portal with **no recency flag** (jobdanmark offers none) still gets scoped: every portal's search output carries a `date` field, so filter client-side — drop results whose `date` is older than 30 days after the call returns, and never invent a flag the portal's SKILL.md does not document (the CLIs reject unknown flags). `--order PublicationDate` is a sort, and a sort is not a filter — pairing it with a `--limit` is a defensible approximation on a portal that offers nothing better (jobnet), but apply the client-side date filter on top all the same.
 4. Cap results to ~20 per call using the portal's limit flag.
 5. Use `--format json` for machine-readable output.
 
@@ -147,7 +147,7 @@ For each new job, do a rapid fit check (NOT the full evaluation from `04-job-eva
 
 **Language override:** before assigning a match level, check the posting against `04-job-evaluation.md`'s Language Gate (a required language you haven't declared at all in your CLAUDE.md Languages table). A required language that's entirely undeclared overrides skill fit: mark it **Low** regardless of how well the skills align, and name it in the highlight bullets so it isn't buried under an otherwise-good-looking match. A **declared** language at a requirement that reads higher than your declared level is *not* an override — score fit normally, but add a red-flag bullet under that job's highlights (Step 5) quoting the posting's requirement next to your declared level, so the gap is visible without being auto-downgraded.
 
-**Experience, sponsorship and US-location override:** the candidate targets 0-2 years of experience, needs H-1B sponsorship (F-1 STEM OPT), and only US roles are in scope. If the **title** already fails `04-job-evaluation.md`'s Experience Gate (Senior, Sr., Staff, Principal, Lead, Manager, Director, Architect, Head of, level III+), the fetched detail or snippet states a required 3+ years, it shows Sponsorship Gate FAIL wording ("no sponsorship", "unable to sponsor", "US citizens only", "green card", "security clearance"), or the location is outside the United States, store the job with `"status": "skipped"` and leave it out of the Step 5 table (count it in the summary line). Check titles before any detail fetch, so a senior role costs nothing. Do not try to decide sponsorship PASS vs UNKNOWN here - that needs the full posting and is `/rank`'s job. Recommend `/rank` as the next step in Step 5.
+**Experience, sponsorship and US-location override:** the candidate targets 0-2 years of experience, needs H-1B sponsorship (F-1 STEM OPT), and only US roles are in scope. If the **title** already fails `04-job-evaluation.md`'s Experience Gate (Senior, Sr., Staff, Principal, Lead, Manager, Director, Architect, Head of, level III+, intern / internship / co-op, or a new-grad program tied to a 2026/2027 graduation year such as "2027 New Grad" - the candidate graduated Jun 2025), the fetched detail or snippet states a required 3+ years, it shows Sponsorship Gate FAIL wording ("no sponsorship", "unable to sponsor", "US citizens only", "green card", "security clearance"), or the location is outside the United States, store the job with `"status": "skipped"` and leave it out of the Step 5 table (count it in the summary line). Check titles before any detail fetch, so a senior role costs nothing. Do not try to decide sponsorship PASS vs UNKNOWN here - that needs the full posting and is `/rank`'s job. Recommend `/rank` as the next step in Step 5.
 
 ### Step 4: Deduplicate & Store
 
@@ -241,7 +241,7 @@ Scraper-based portal CLIs rot silently: when a portal changes its markup, the pa
 
 ### Step 5: Present Results
 
-Present new jobs in a table sorted by fit (high first). When Step 1b skipped
+Present new jobs in a table sorted by posting-age tier (today, this week, this month), then by fit (high first) within a tier. When Step 1b skipped
 portals (`enabled: false`), report them with the `skipped (disabled):` line below
 so opting one out stays visible rather than silent; omit the line when nothing
 was skipped. When any portal's results came from the Step 1c fallback this run
@@ -267,9 +267,9 @@ fallback (websearch): <portal-name>, <portal-name>
 health: <portal-name> - degraded (company null on all 12 results); parsing anchors in .agents/skills/<portal-name>/url-reference.md
 health: <portal-name> - broken (0 results for the SKILL.md test query and a broader retry); parsing anchors in .agents/skills/<portal-name>/url-reference.md
 
-| # | Fit | Title | Company | Location | Deadline | URL |
-|---|-----|-------|---------|----------|----------|-----|
-| 1 | High | ... | ... | ... | ... | [Link](...) |
+| # | Posted | Fit | Title | Company | Location | Deadline | URL |
+|---|--------|-----|-------|---------|----------|----------|-----|
+| 1 | 🆕 today | High | ... | ... | ... | ... | [Link](...) |
 
 If Step 2.5 flagged a mass-posting pattern, note it in the Title cell (e.g. "Frontend Developer (posted in 6 cities)") rather than burying it. Do the same for a declared-language-insufficient-level flag from the Language Gate (e.g. "Backend Engineer ⚠ fluent English required") - both are signals the user should see at a glance, not just in the detail highlights below.
 

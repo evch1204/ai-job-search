@@ -15,7 +15,7 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 Only these five boards are in scope. Every result must be a role located in the United States (or US-remote).
 
 Primary (CLI):
-- **linkedin.com/jobs** - `linkedin-search` CLI. Run it twice per query: `-l "San Francisco Bay Area"` and `-l "United States" --remote remote`, both with `--jobage 14 --experience entry,associate` (LinkedIn's 0-2-year levels; it mislabels some senior roles, so the title check in `/scrape` Step 3 still applies).
+- **linkedin.com/jobs** - `linkedin-search` CLI. Run it twice per query: `-l "San Francisco Bay Area"` and `-l "United States" --remote remote`, with `--experience entry,associate` and the date tiers below (`--jobage 1`, then `7`, then `30`) (LinkedIn's 0-2-year levels; it mislabels some senior roles, so the title check in `/scrape` Step 3 still applies).
 
 WebSearch fallback (no CLI - `/scrape` Step 1c runs these `site:` queries):
 - **indeed.com** - posting URLs look like `indeed.com/viewjob?jk=...`; skip `indeed.com/q-...` listing pages
@@ -89,7 +89,7 @@ Your working languages and levels are in CLAUDE.md's Languages table. When filte
 
 ## Date Filter
 
-Only include jobs posted within the last 14 days (LinkedIn CLI: `--jobage 14`), or with an application deadline that has not yet passed. If a posting date cannot be determined, include it but flag as "date unknown".
+Tiers, in order: **posted today** (LinkedIn `--jobage 1`), then **past week** (`--jobage 7`), then **past month** (`--jobage 30`). Nothing older than 30 days, even with an open deadline. If a posting date cannot be determined, include it in the past-month tier flagged "date unknown".
 
 ## Adapting Queries
 

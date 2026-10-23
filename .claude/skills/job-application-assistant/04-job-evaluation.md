@@ -1,5 +1,5 @@
 ---
-framework_version: 1.4.0
+framework_version: 1.5.0
 ---
 
 # Job Evaluation Framework
@@ -38,12 +38,30 @@ Read the posting's **required** qualifications (not "preferred" / "nice to have"
 
 | Posting says | Verdict |
 |---|---|
+| **Internship, co-op, apprenticeship or fellowship for students** (title or posting says intern/internship/co-op, or requires current enrollment / returning to school) | **FAIL** - the candidate has graduated and wants full-time roles |
+| New-grad / university / campus program restricted to a **graduation window that excludes Jun 2025** ("2027 New Grad", "graduating Dec 2026 - Aug 2027", "2027 Start", "currently enrolled") | **FAIL** - quote the window; the candidate graduated Jun 2025 |
 | Title says Senior, Sr., Staff, Principal, Lead, Manager, Director, Architect, Head of, or a level III+ (e.g. "Software Engineer III", "SDE III", "L5+") | **FAIL** - quote the title |
 | **Required** minimum of **3 or more years** ("3+ years", "minimum 4 years", "5-7 years") | **FAIL** - quote the requirement |
 | New grad, entry level, early career, university graduate, "Software Engineer I", 0-1 years, or no years stated for a non-senior title | **PASS** |
 | Required minimum of exactly **2 years** ("2+ years"), a level II title ("SDE II", "Software Engineer II") with no years stated, or 3+ years listed only as **preferred** | **FLAG** - score and draft normally, but surface the stretch to the user with the quoted line |
 
+**New grad is in scope.** The candidate counts as a recent graduate (Jun 2025): a new-grad or early-career role PASSES when its stated graduation window includes Jun 2025 or it states no window ("recent graduate", "graduated within the last 2 years", "0-2 years"); it FAILS only when the window clearly excludes Jun 2025. Always quote the posting's graduation wording in `experience_note` when it states one.
+
 Use the **minimum** of a range ("2-4 years" -> 2 -> FLAG). "Or equivalent experience" does not lower the stated number. Internships and project work do not count toward the 1 year, so never present them as extra years of full-time experience.
+
+## Posting Age — run before scoring
+
+Recency decides priority, and past a month the job is not worth an application:
+
+| Posted | Treatment |
+|---|---|
+| Today or yesterday | Top priority - work these first |
+| 2-7 days ago | Normal priority |
+| 8-30 days ago | Lower priority, flagged with its age |
+| More than 30 days ago | **Skip** - do not draft; mention it only if the user asks |
+| Unknown | Treat as 8-30 days and say "date unknown"; never infer from when it was first seen |
+
+`/scrape` searches today first, then the past week, then the past month; `/rank` sorts by these tiers before score; `/apply` states the posting's age in Step 1 and stops on a posting older than 30 days unless the user overrides.
 
 ## Language Gate — run before scoring
 
