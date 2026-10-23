@@ -34,6 +34,8 @@ Run it every few days. It updates the Sheet for you: a changed row gets a dated 
 
 ## Batch apply (many jobs, fully tailored)
 
+- **Shortcut: `/hunt`** (10 jobs) or **`/hunt 25`** (any number), optionally with a focus: `/hunt 10 ai engineer`, `/hunt 5 seattle`. It searches, ranks and batch-applies in one go
+
 - Say **"find the best 10 jobs and apply to them"** - or, after a search, **"apply to 1-10"**
 - It searches and ranks, then 3-4 writer agents work in parallel (about 3 jobs each), each job getting a **custom-tailored resume and a custom cover letter** from your profile
 - A **QA checker agent** then reviews every application (facts vs your profile, grammar, company/role names, 1 page each, no em-dashes, no sponsorship misstatements); fixes are applied and re-checked before you see anything
