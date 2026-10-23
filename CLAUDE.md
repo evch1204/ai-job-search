@@ -17,7 +17,7 @@ Full factual profile: `.claude/skills/job-application-assistant/01-candidate-pro
 
 ### Identity
 - **Name:** Tei (Evan) Chang
-- **Location:** Santa Clara, CA, USA (Bay Area on-site/hybrid, or remote within the US)
+- **Location:** Santa Clara, CA, USA - open to on-site/hybrid within ~50 miles of Santa Clara (SF Bay Area, incl. San Francisco, Oakland, San Jose, Santa Cruz), New York City, Seattle, Los Angeles, or fully remote in the US
 - **Languages:**
   | Language | Level |
   |----------|-------|

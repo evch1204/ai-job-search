@@ -1,5 +1,5 @@
 ---
-framework_version: 1.6.0
+framework_version: 1.6.1
 ---
 
 # Job Evaluation Framework
@@ -132,10 +132,11 @@ Does the role and company culture match the behavioral profile?
 **Red flags to research:** Department disorganization, work dominated by maintenance over development, poor chemistry with leadership, culture mismatches. Check reviews, media coverage, LinkedIn connections, and network contacts for insider perspective.
 
 ### 4. Location & Logistics (Pass/Fail + Notes)
-- Within commute range: PASS
-- Remote with occasional office: PASS
+- Within ~50 miles of Santa Clara (SF Bay Area: San Francisco, Peninsula, East Bay, South Bay, Santa Cruz): PASS
+- New York City, Seattle, or Los Angeles metro (on-site or hybrid): PASS - the candidate will relocate to these
+- Fully remote within the US: PASS
+- On-site elsewhere in the US: FLAG (discuss with user)
 - Located outside the United States: FAIL (deal-breaker - US roles only)
-- Requires relocation within the US: FLAG (discuss with user)
 - Frequent international travel: FLAG (discuss with user)
 
 ### 5. Career Alignment & Motivation (0-100)

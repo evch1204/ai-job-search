@@ -21,7 +21,8 @@ This rule is the input side of the Step 3 Factual Grounding Audit, not a competi
 ## Step 0: Parse Input
 
 - If `$ARGUMENTS` looks like a URL, **dispatch the `posting-fetcher` agent** via the Agent tool (`subagent_type: posting-fetcher`, the shipped definition in `.claude/agents/posting-fetcher.md`: it can read and fetch but not edit or write, so the component that touches the raw web page has no way to act on it). Pass it the URL only - no profile data, no pasted posting text. It discovers installed portals itself, follows the escalation order below, runs `tools/posting_guard.py` on whatever it retrieved, and returns the gate's verdict, its findings, the extracted metadata and the **cleaned posting text**. The escalation order it applies, from `.claude/skills/job-application-assistant/09-web-research.md`:
-  - **Portal CLI first:** If the URL's host matches an installed portal skill in `.agents/skills/` (derived from the board hosts in `.agents/skills/*/cli/src` and `url-reference.md`, e.g. `linkedin.com` -> `linkedin-search`), run that CLI's `detail` command first:
+  - **Robots rule:** never fetch a host whose robots.txt disallows Claude's agent (check with `python3 tools/robots_check.py`). LinkedIn job pages, `app.joinhandshake.com`, `hiring.cafe/viewjob` and `indeed.com/viewjob` are disallowed: for those URLs skip straight to finding the **employer's own posting** (WebSearch on the company + role from the URL slug, or ask the user to paste the text).
+  - **Portal CLI first:** If the URL's host matches an installed and **enabled** portal skill in `.agents/skills/` (derived from the board hosts in `.agents/skills/*/cli/src` and `url-reference.md`, e.g. `linkedin.com` -> `linkedin-search`), run that CLI's `detail` command first:
     ```bash
     bun run .agents/skills/<portal-skill>/cli/src/cli.ts detail "$ARGUMENTS" --format plain
     ```

@@ -12,18 +12,19 @@ The `site:` query templates in this file are the **WebSearch fallback** — for 
 
 ## Search Sites (US only)
 
-Only these five boards are in scope. Every result must be a role located in the United States (or US-remote).
+**Robots rule first:** never fetch a page whose robots.txt disallows Claude's agent (`Claude-User`) - check with `python3 tools/robots_check.py <url>`. As checked on 2026-10-23 that rules out LinkedIn job pages (search, detail and `/jobs/view/`), `app.joinhandshake.com`, `hiring.cafe/viewjob/...` and `indeed.com/viewjob`. Postings from those sites reach the workflow only when the user brings them in, and then `/apply` reads the **employer's own copy** instead.
 
-Primary (CLI):
-- **linkedin.com/jobs** - `linkedin-search` CLI. Run it twice per query: `-l "San Francisco Bay Area"` and `-l "United States" --remote remote`, with `--experience entry,associate` and the date tiers below (`--jobage 1`, then `7`, then `30`) (LinkedIn's 0-2-year levels; it mislabels some senior roles, so the title check in `/scrape` Step 3 still applies).
+Sources, searched in this order (the user can name any subset - see "Naming sites" below):
+1. **Employer job boards** - Ashby (`jobs.ashbyhq.com/<company>`), Lever (`jobs.lever.co/<company>`), Greenhouse (`boards-api.greenhouse.io/v1/boards/<company>/jobs`), and company careers pages: allowed, and they carry the original posting date and the full text, including sponsorship wording. Found through WebSearch with company names; `site:` filters on these hosts are unreliable.
+2. **SimplyHired** (`simplyhired.com/search`, `simplyhired.com/job/...`) - allowed; WebSearch fallback until a CLI exists.
+3. **Indeed / hiring.cafe** - search results only (their job pages are disallowed): use a hit only to identify company + role, then find the employer's own posting.
+4. **LinkedIn / Handshake** - never fetched; the user browses and pastes links or text.
 
-WebSearch fallback (no CLI - `/scrape` Step 1c runs these `site:` queries):
-- **indeed.com** - posting URLs look like `indeed.com/viewjob?jk=...`; skip `indeed.com/q-...` listing pages
-- **simplyhired.com** - posting URLs look like `simplyhired.com/job/...`
-- **hiring.cafe** - posting URLs look like `hiring.cafe/viewjob/...`
-- **joinhandshake.com** - public pages only. The logged-in app (`app.joinhandshake.com`) disallows Claude's agent in its robots.txt, so it is never fetched or browsed automatically, even with the user's login. The user browses Handshake and brings postings in by hand (see "Handshake postings" in `US_QUICKSTART.md`)
+Disabled portal CLIs: `linkedin-search` (robots.txt disallows Claude-User), `freehire-search` and the Danish portals (`enabled: false` in their SKILL.md).
 
-Disabled: `freehire-search` and the Danish portals (`enabled: false` in their SKILL.md).
+### Naming sites
+
+The user can restrict a run to named sources - "/scrape simplyhired", "search only Ashby and Lever", "/scrape company boards for Stripe, Figma, Notion". Run only those sources (still under the robots rule) and say which ones were skipped. With no site named, use the order above.
 
 ## Query Categories
 
@@ -40,7 +41,7 @@ site:joinhandshake.com "software engineer" "new grad" -senior -staff -principal 
 site:linkedin.com/jobs/view "software engineer" "new grad" "United States" -senior -staff -principal -lead
 ```
 
-LinkedIn CLI queries: `-q "software engineer new grad"`, `-q "full stack engineer"`, `-q "frontend engineer react"`, `-q "backend engineer"`, `-q "software engineer I"`.
+Role-title variants (also usable as company-board keyword filters): `-q "software engineer new grad"`, `-q "full stack engineer"`, `-q "frontend engineer react"`, `-q "backend engineer"`, `-q "software engineer I"`.
 
 ### Priority 2: AI / LLM application engineering
 
@@ -51,7 +52,7 @@ site:hiring.cafe/viewjob ("AI engineer" OR "applied AI" OR "LLM") ("junior" OR "
 site:linkedin.com/jobs/view "AI engineer" "entry level" "United States" -senior -staff -principal -lead
 ```
 
-LinkedIn CLI queries: `-q "AI engineer"`, `-q "applied AI engineer"`, `-q "machine learning engineer new grad"`.
+Role-title variants (also usable as company-board keyword filters): `-q "AI engineer"`, `-q "applied AI engineer"`, `-q "machine learning engineer new grad"`.
 
 ### Priority 3: Developer tools / platform / infrastructure (adjacent)
 
@@ -60,7 +61,7 @@ site:indeed.com/viewjob ("developer tools" OR "developer experience" OR "platfor
 site:hiring.cafe/viewjob ("developer tools" OR "platform engineer" OR "SDK") junior -senior -staff -principal -lead
 ```
 
-LinkedIn CLI queries: `-q "developer tools engineer"`, `-q "platform engineer entry level"`.
+Role-title variants (also usable as company-board keyword filters): `-q "developer tools engineer"`, `-q "platform engineer entry level"`.
 
 ### Priority 4: Sponsorship-first sweep
 
@@ -74,10 +75,12 @@ site:hiring.cafe/viewjob "software engineer" ("visa sponsorship" OR "H-1B") -sen
 
 ## Location Filter
 
-US roles only. A role located outside the United States is a location FAIL (excluded), never a sponsorship question.
-- **PASS:** San Jose, Santa Clara, Sunnyvale, Mountain View, Palo Alto, Cupertino, Milpitas, Fremont, Menlo Park, Redwood City, San Mateo, San Francisco, Oakland (Bay Area on-site or hybrid); remote within the US
-- **FLAG:** on-site elsewhere in the US (relocation - the user decides)
+US roles only. A role located outside the United States is a location FAIL (dropped), never a sponsorship question.
+- **PASS:** within ~50 miles of Santa Clara - San Jose, Santa Clara, Sunnyvale, Mountain View, Palo Alto, Cupertino, Milpitas, Fremont, Menlo Park, Redwood City, San Mateo, South San Francisco, San Francisco, Oakland, Berkeley, Hayward, Pleasanton, Santa Cruz; **New York City**, **Seattle** (incl. Bellevue, Redmond, Kirkland), **Los Angeles** (incl. Santa Monica, Irvine area only if remote/hybrid-friendly - FLAG otherwise); fully remote within the US
+- **FLAG:** on-site elsewhere in the US (the user decides)
 - **FAIL:** outside the United States, or "remote" restricted to another country
+
+Location search terms for queries: "Bay Area" / "San Jose" / "San Francisco", "New York", "Seattle", "Los Angeles", and `remote "United States"`.
 
 ## Sponsorship Filter
 

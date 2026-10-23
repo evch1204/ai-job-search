@@ -279,9 +279,18 @@ class InstalledPortalsAreVerifiedTests(unittest.TestCase):
                     self.assertRegex(host, r"^[a-z0-9.-]+\.[a-z]{2,}$")
 
     def test_enabled_flag_reads_like_scrape(self):
-        # /scrape: "a missing key means enabled". Both shipped states occur in the tree.
-        states = {skill.name: portal_enabled(skill) for skill in installed_portal_skills()}
-        self.assertTrue(any(states.values()), f"no enabled portal among {states}")
+        # /scrape: "a missing key means enabled". Exercised on fixtures, not the
+        # tree: a fork may legitimately disable every shipped portal.
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            cases = {"on": "enabled: true  # x", "off": "enabled: false  # x", "missing": ""}
+            for name, line in cases.items():
+                d = Path(tmp) / name
+                d.mkdir()
+                (d / "SKILL.md").write_text(f"---\nname: {name}\n{line}\n---\n", encoding="utf-8")
+            self.assertTrue(portal_enabled(Path(tmp) / "on"))
+            self.assertFalse(portal_enabled(Path(tmp) / "off"))
+            self.assertTrue(portal_enabled(Path(tmp) / "missing"))
         self.assertIsInstance(portal_enabled(SKILLS_DIR / "does-not-exist-search"), bool)
 
     def test_classifier_fails_closed_on_look_alikes_and_unverified_hosts(self):

@@ -1,5 +1,5 @@
 ---
-framework_version: 1.2.0
+framework_version: 1.2.1
 ---
 
 # Candidate Profile
@@ -15,7 +15,7 @@ This is the factual source of truth: every CV/cover-letter claim must trace back
 - **LinkedIn:** linkedin.com/in/evan-chang1
 - **GitHub:** github.com/evch1204
 - **Status:** Software engineer, available now (most recent role ended Sep 2026)
-- **Constraints:** US-based roles only - Bay Area on-site/hybrid, or remote within the US
+- **Constraints:** US-based roles only - on-site/hybrid within ~50 miles of Santa Clara (SF Bay Area), New York City, Seattle, Los Angeles, or fully remote in the US
 
 ### Work Authorization
 - **Current status:** F-1 STEM OPT (24-month extension)
