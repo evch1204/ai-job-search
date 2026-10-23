@@ -77,6 +77,7 @@ It prints one JSON object per tracker row with a stable `key` and the `sheet_sta
 | K | Notes | **user** - sync writes only on append |
 | L | Key | sync - dedup anchor, never edited by hand |
 | M | Sponsorship | sync - tracker `sponsorship` (`PASS` / `UNKNOWN`, blank when unrecorded); fills when blank or when the tracker value changed |
+| N | Last change | sync - see "Showing what changed" below |
 
 **AI tab layout** (`ai_tab`; same ownership rules as the matching columns above - user-owned columns are never overwritten on existing rows). Rows 1-2 are a title bar and a color legend, row 3 the header. The tab's look - row banding, borders, and the status colors (To apply blue, Check sponsorship orange, Interviewing yellow, Offer green, Rejected red, Skipped/Withdrawn/No response grey, Applied white) - comes from banding and conditional-format rules keyed on column G, so appended rows pick it up automatically: **write values only, never formats.** Write the Link as `=HYPERLINK("<source>","open link")` with `USER_ENTERED`, matching the original tab.
 
@@ -96,10 +97,17 @@ It prints one JSON object per tracker row with a stable `key` and the `sheet_sta
 | L | Final interview | **user** - never written |
 | M | Notes | **user** - sync writes only on append |
 | N | Key | sync - dedup anchor |
+| O | Last change | sync - see "Showing what changed" below |
 
 First run only: if L`<header_row>` is empty, write `Key` there; if M`<header_row>` is empty, write `Sponsorship` there. If the Status column's dropdown has no `No response` option, tell the user once that `/outcome stale` can produce that status and offer to add it to the dropdown; add it only on yes. The same applies to a missing `Check sponsorship` option, which `sponsorship_check` rows (US postings with unconfirmed sponsorship, recorded for the user to check and apply to manually) need.
 
 ---
+
+### Showing what changed
+
+The user must be able to see at a glance that a row changed (a rejection found by `/gmail-sync`, an interview recorded by `/outcome`):
+- **Last change cell** (`tab` column N, `ai_tab` column O): whenever this run writes a **different** Status to an existing row, write `YYYY-MM-DD: <old sheet status> → <new sheet status>` (today's date first - a conditional-format rule turns that row's `#` and Last change cells bright yellow for 3 days). Never write it on an append or when the status is unchanged.
+- **Last sync banner** (`ai_tab` cell H1, white text on the title bar): always rewrite it to `Last sync YYYY-MM-DD: <N> change(s) - <Company>: <Old> → <New>; ...` (at most 4 listed, then "+K more"), or `Last sync YYYY-MM-DD: no status changes` when nothing changed. Count changes in both tabs.
 
 ## Step 4: Upsert
 
@@ -113,6 +121,7 @@ For each sync-set row:
    - **Reason (AI tab, H):** write `status_reason` whenever it differs from the cell.
    - **Sponsorship (M, or J in the AI tab):** write when blank and `sponsorship` is non-empty, or when it differs from the tracker (`UNKNOWN` -> `PASS` after the user confirmed sponsorship and re-ran `/apply`).
    - Never touch E, F, H, I, K on an existing row.
+   - **Last change:** on every Status write that changes the value, write the Last change cell (see "Showing what changed"), and add the change to this run's list for the banner and the Step 5 report.
 3. Record every Status value you write (or found already equivalent) in `written_status[key]`.
 4. Batch writes (`update_values` with several ranges per call). Rows the user added by hand (empty Key) are invisible to this command - never modify or number-shift them.
 
@@ -133,7 +142,7 @@ Conflicts (left as-is in the sheet):
 - Kabi - Forward Deployed Engineer: sheet says Offer, tracker says interview → run `/outcome kabi`
 ```
 
-Update `last_sync` and `written_status` in `job_scraper/sheets_sync.json`.
+Rewrite the Last sync banner, then update `last_sync` and `written_status` in `job_scraper/sheets_sync.json`. List every status change in the report under **"Changed this sync"** first, before the table, so a rejection or interview is the first thing the user reads.
 
 ---
 

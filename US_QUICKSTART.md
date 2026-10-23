@@ -28,7 +28,9 @@ One-time setup - you do these steps; Claude never signs in for you:
 3. Start a **new** Claude Code session in this folder (connectors load at session start)
 4. Say **"check my email for application updates"** (or `/gmail-sync`). It reads confirmations, interview invites and rejections, **proposes** status changes, and writes only what you approve - it never sends email
 
-Run it every few days; then `/sheets-sync` (or "update my sheet") mirrors the new statuses.
+Run it every few days. It updates the Sheet for you: a changed row gets a dated **Last change** note (e.g. `2026-10-25: Applied → Rejected`) with its **#** and **Last change** cells **highlighted yellow for 3 days**, and the **Last sync** note in the title bar of JOB APPLICATION AI lists what changed.
+
+**Gmail stays read-only:** `/gmail-sync` may only search and read mail. After connecting, say **"lock Gmail to read-only"** in a new session and Claude adds deny rules for every Gmail send/draft/forward/label/filter/delete tool to this project's settings; also set those tools to "never" in the connector's own permissions if Claude's Settings offers it.
 
 ## Fast lane (apply at volume)
 
