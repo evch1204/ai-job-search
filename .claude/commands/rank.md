@@ -218,7 +218,7 @@ Rules for the presentation:
 - A job whose `guard` is anything other than `clean` gets a ⚠ marker next to its Title in whichever table it lands, and the verdict line quoted in its "Why these ranked highest" writeup (or next to its row below threshold). It is a signal for the user to read the posting with care before `/apply`, never a veto.
 - Every claim traces to fetched posting text or the profile - no invented details.
 - Say explicitly that these are **triage scores from the posting text only**, and that `/apply` will re-evaluate with company research before anything is drafted.
-- Then ask: "Want to apply to any of these? Give me the number(s) for the full `/apply` workflow, or say \"fast apply 1-10\" to prepare a batch with the fast lane (ready-made resume + short cover letter each)."
+- Then ask: "Want to apply to any of these? Give me the number(s) for the full `/apply` workflow, or say \"apply to 1-10\" to run them as one parallel batch (fully tailored resume + cover letter each, checked by the QA agent)."
 - If the user picks one, run the `/apply` workflow on that job's URL, passing the triage verdict as prior context but **re-running the full Step 1 evaluation** - triage never substitutes for it.
 
 ---

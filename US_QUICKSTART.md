@@ -16,7 +16,7 @@ Everything runs inside Claude Code, opened in this folder. You type slash comman
 | 1. Find jobs | `/scrape` (or `/scrape broad`, `/scrape AI engineer`) | Searches LinkedIn (Bay Area + US remote, entry/associate levels) and Indeed, SimplyHired, hiring.cafe and public Handshake pages via web search. Last 14 days, new jobs only. Drops senior titles and obvious "no sponsorship" / non-US postings |
 | 2. Triage | `/rank` | Reads every new posting, applies the **Sponsorship Gate**, and scores fit. Shows a shortlist with links. UNKNOWN-sponsorship jobs go to your tracker as **Check sponsorship** |
 | 3. Mirror to Sheet | `/sheets-sync` | Pushes new tracker rows to your Google Sheet, with the apply link in **Link / email** and **Sponsorship** in column M |
-| 4. Apply | `/apply <job URL>` (or pick a number after `/rank`) | Re-checks sponsorship, evaluates fit, then writes a tailored 1-page resume `cv/main_<company>_<role>.pdf` plus a cover letter (default - forms often ask for one), verifies it, and records it as `drafted` |
+| 4. Apply | `/apply <job URL>` (or pick a number after `/rank`; several numbers = Batch apply) | Re-checks sponsorship, evaluates fit, then writes a tailored 1-page resume `cv/main_<company>_<role>.pdf` plus a cover letter (default - forms often ask for one), verifies it, and records it as `drafted` |
 | 5. Submit yourself | open the link | You submit the application on the company site |
 | 6. Record it | `/outcome <company>` | Moves the row to `applied` (and later interview / offer / rejected) |
 
@@ -32,12 +32,14 @@ Run it every few days. It updates the Sheet for you: a changed row gets a dated 
 
 **Gmail stays read-only:** `/gmail-sync` may only search and read mail. After connecting, say **"lock Gmail to read-only"** in a new session and Claude adds deny rules for every Gmail send/draft/forward/label/filter/delete tool to this project's settings; also set those tools to "never" in the connector's own permissions if Claude's Settings offers it.
 
-## Fast lane (apply at volume)
+## Batch apply (many jobs, fully tailored)
 
-- Say **"fast apply 1-10"** after `/rank` (or "fast apply <links>"). Each job gets one of three ready-made 1-page resumes (General SWE, Full-stack, AI/ML) and a short cover letter, with no per-job research - seconds per job
-- Sponsorship not mentioned? The fast lane checks the company's H-1B filing history: recent filings -> drafted with a "likely sponsor" note; none -> left as **Check sponsorship**
-- Use the full `/apply` (deep tailoring + reviewer) for your top ~10%
-- The three resume versions are `cv/baseline_general_swe`, `cv/variant_fullstack`, `cv/variant_ai_ml` - say "update my fast-lane resumes" after your profile changes
+- Say **"find the best 10 jobs and apply to them"** - or, after a search, **"apply to 1-10"**
+- It searches and ranks, then 3-4 writer agents work in parallel (about 3 jobs each), each job getting a **custom-tailored resume and a custom cover letter** from your profile
+- A **QA checker agent** then reviews every application (facts vs your profile, grammar, company/role names, 1 page each, no em-dashes, no sponsorship misstatements); fixes are applied and re-checked before you see anything
+- Sponsorship not mentioned? Drafted only if the company has recent H-1B filings (noted as "likely sponsor"); otherwise it goes to the Sheet as **Check sponsorship**
+- Batches of 10 at a time; each application costs about as much as one `/apply`
+- Result: one table plus `cv/submit/<company>_<role>/` folders - you open each link and upload two files
 
 ## Handshake postings
 
