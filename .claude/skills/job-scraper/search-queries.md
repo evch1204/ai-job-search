@@ -89,7 +89,7 @@ Your working languages and levels are in CLAUDE.md's Languages table. When filte
 
 ## Date Filter
 
-Tiers, in order: **posted today** (LinkedIn `--jobage 1`), then **past week** (`--jobage 7`), then **past month** (`--jobage 30`). Nothing older than 30 days, even with an open deadline. If a posting date cannot be determined, include it in the past-month tier flagged "date unknown".
+Tiers, in order: **posted today** (LinkedIn `--jobage 1`), then **past week** (`--jobage 7`), then **past month** (`--jobage 30`). Search no further back than 30 days, but a job whose employer page later shows an older original date is still kept (age is a flag, not a skip). If a posting date cannot be determined, include it in the past-month tier flagged "date unknown".
 
 ## Adapting Queries
 

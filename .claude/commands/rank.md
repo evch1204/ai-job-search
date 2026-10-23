@@ -117,7 +117,7 @@ Back in the main context, for each scored job:
    - **Today** (posted today or yesterday) - 🆕 marker; these lead the shortlist.
    - **This week** (2-7 days) - no marker.
    - **This month** (8-30 days) - ⚠ marker with the age spelled out (e.g. "⚠ posted 2026-10-02, 21 days ago"); still ranked.
-   - **Older than 30 days** - **excluded**, listed under "Excluded" as "posted <date>, <N> days ago". Age is a veto past 30 days, by the candidate's choice: applications to month-old postings rarely get read, so they are not worth a tailored resume. A stored future `deadline` does not rescue it - note the deadline in the Excluded line so the user can override by hand.
+   - **Older than 30 days** - ⚠ marker with the age spelled out; kept and ranked in an "Older" tier after This month. Age is a flag, never a veto, by the candidate's choice: an old posting that is still open is the candidate's call. When it lands under `needs_check`, Step 4b's tracker note gets "old posting: first posted <date> (<N> days ago)".
    This costs no fetch: `posted_date` is already on disk (written by `/scrape` Step 4), and age is re-derived on every run, never persisted.
    **An entry with no `posted_date` (or `null`) gets no flag and no guess** - it is ranked in the "This month" tier with "date unknown" noted, and inferring age from `first_seen` would
    tier jobs on a date nobody posted. Rule 6's defensive-parse rule applies wherever a
@@ -125,7 +125,7 @@ Back in the main context, for each scored job:
    treated exactly like an absent one and reported once in the Step 5 summary with its
    portal.
 
-Sort by posting-age tier first (Today, This week, This month), then by overall score (descending) within a tier, urgency as tiebreaker.
+Sort by posting-age tier first (Today, This week, This month, Older), then by overall score (descending) within a tier, urgency as tiebreaker.
 
 ---
 

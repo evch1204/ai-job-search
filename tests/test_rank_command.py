@@ -507,9 +507,10 @@ class PostedDateStalenessSpec(unittest.TestCase):
         )
 
     def test_age_tiers_flag_this_month_and_veto_past_30_days(self):
-        # This fork's candidate rule: today first, then this week; 8-30 days is
-        # a visible flag, and anything older than a month is excluded.
-        self.assertRegex(self.flat, r"Older than 30 days\*\* - \*\*excluded\*\*")
+        # This fork's candidate rule: today first, then this week; older postings
+        # are flagged and sorted last, never dropped.
+        self.assertRegex(self.flat, r"Older than 30 days\*\* - ⚠ marker")
+        self.assertRegex(self.flat, r"[Aa]ge is a flag, never a veto")
         self.assertRegex(self.flat, r"This month\*\* \(8-30 days\) - ⚠ marker")
         self.assertRegex(self.flat, r"Sort by posting-age tier first")
 

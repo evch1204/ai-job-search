@@ -1,10 +1,16 @@
 ---
-framework_version: 1.5.1
+framework_version: 1.6.0
 ---
 
 # Job Evaluation Framework
 
 <!-- SETUP: Skill match areas and career goals are personalized by running /setup -->
+
+## Keep or Drop - the rule behind every gate
+
+**Drop silently only on a clear dealbreaker**; keep everything uncertain for the candidate to decide.
+- **Dropped** (never drafted, never written to the tracker or Google Sheet - only counted in the run summary): an explicit sponsorship refusal / US-citizens-or-green-card-only / clearance / ITAR (Sponsorship Gate FAIL), an Experience Gate FAIL (senior title, a required 3+ years, internship, or a graduation window that excludes Jun 2025), a required language not declared (Language Gate FAIL), or a role outside the United States.
+- **Kept** (recorded with a Reason the candidate can read): sponsorship not stated (`sponsorship_check`), an older posting (Posting Age flag), an Experience or Language FLAG. Uncertainty is the candidate's call, never a silent skip.
 
 ## Sponsorship Gate (US work authorization) — run before scoring
 
@@ -51,19 +57,19 @@ Use the **minimum** of a range ("2-4 years" -> 2 -> FLAG). "Or equivalent experi
 
 ## Posting Age — run before scoring
 
-Recency decides priority, and past a month the job is not worth an application:
+Recency decides priority. Age is a **flag, never a reason to drop** a job - an older posting that is still open stays on the list, sorted below fresher ones:
 
 | Posted | Treatment |
 |---|---|
 | Today or yesterday | Top priority - work these first |
 | 2-7 days ago | Normal priority |
 | 8-30 days ago | Lower priority, flagged with its age |
-| More than 30 days ago | **Skip** - do not draft; mention it only if the user asks |
+| More than 30 days ago | Lowest priority - kept and recorded, with "old posting: first posted <date> (<N> days ago)" in its notes so the Sheet's Reason column shows it |
 | Unknown | Treat as 8-30 days and say "date unknown"; never infer from when it was first seen |
 
-**Which date counts: the employer's.** LinkedIn and other aggregators re-date reposted jobs, so a months-old opening can show as posted today. When the employer's own careers/ATS page (Greenhouse, Ashby, Lever, Workday, company site) states a posting date - usually schema.org `datePosted` - that date wins over the aggregator's. Use the aggregator date only when the employer page shows none, and say so. Example: a LinkedIn "Oct 20" Notion role was first posted Jul 6 on Ashby, so it is >30 days and skipped.
+**Which date counts: the employer's.** LinkedIn and other aggregators re-date reposted jobs, so a months-old opening can show as posted today. When the employer's own careers/ATS page (Greenhouse, Ashby, Lever, Workday, company site) states a posting date - usually schema.org `datePosted` - that date wins over the aggregator's. Use the aggregator date only when the employer page shows none, and say so. Example: a LinkedIn "Oct 20" Notion role was first posted Jul 6 on Ashby, so it is 109 days old - kept, flagged as an old posting.
 
-`/scrape` searches today first, then the past week, then the past month; `/rank` sorts by these tiers before score; `/apply` states the posting's age in Step 1 and stops on a posting older than 30 days unless the user overrides.
+`/scrape` searches today first, then the past week, then the past month; `/rank` sorts by these tiers before score; `/apply` states the posting's age in Step 1 (an old posting is mentioned, never a reason to stop).
 
 ## Language Gate — run before scoring
 

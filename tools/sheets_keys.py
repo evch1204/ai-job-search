@@ -70,8 +70,14 @@ TRACKER_TO_SHEET = {
 # A `withdrawn` row the pipeline skipped (too old, ineligible) - rather than one the
 # user withdrew - carries a "skipped: <why>" note; the sheet shows it as Skipped.
 SKIP_PREFIX = "skipped:"
-# Note segments that explain a row's current status, newest wins.
-REASON_PREFIXES = ("skipped:", "withdrawn:", "rejected", "user override:", "user approved:")
+# Note segments that explain a row's current status, newest wins - only those
+# relevant to the row's status, so a restored row never shows a stale reason.
+REASON_PREFIXES = {
+    "withdrawn": ("skipped:", "withdrawn:"),
+    "rejected": ("rejected",),
+    "sponsorship_check": ("old posting:",),
+}
+DEFAULT_REASON_PREFIXES = ("old posting:", "user override:", "user approved:")
 
 
 def note_segments(notes: str) -> list[str]:
@@ -87,12 +93,13 @@ def sheet_status_for(status: str, notes: str) -> str:
 
 def status_reason(status: str, notes: str) -> str:
     """Why the row has its status, for the sheet's Reason column."""
-    for seg in reversed(note_segments(notes)):
-        if seg.lower().startswith(REASON_PREFIXES):
-            return seg
-    if (status or "").strip().lower() == "sponsorship_check":
-        return "posting does not mention visa sponsorship - check before applying"
-    return ""
+    status = (status or "").strip().lower()
+    prefixes = REASON_PREFIXES.get(status, DEFAULT_REASON_PREFIXES)
+    found = next((s for s in reversed(note_segments(notes)) if s.lower().startswith(prefixes)), "")
+    if status == "sponsorship_check":
+        base = "posting does not mention visa sponsorship - check before applying"
+        return f"{base}; {found}" if found else base
+    return found
 
 
 def slug(text: str) -> str:

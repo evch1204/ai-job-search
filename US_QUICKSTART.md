@@ -30,6 +30,11 @@ Handshake's logged-in job pages block AI agents (its robots.txt disallows `Claud
    - give me the company and role ("/apply Acme Software Engineer I from Handshake") and I find the employer's own public posting, which `/apply` prefers anyway.
 3. To triage several at once, paste them into the chat and ask "evaluate these against my profile".
 
+## What gets dropped vs. kept
+
+- **Dropped silently** (never in the tracker or Sheet, only counted in the summary): the posting explicitly refuses sponsorship / US citizens or green card only / clearance; senior titles or a required 3+ years; internships; new-grad programs for a graduation year you don't fit; non-US roles
+- **Kept for you to decide**: sponsorship not mentioned (**Check sponsorship**), older postings (flagged in the Reason column, sorted last), a required 2 years or a level II title (flagged)
+
 ## Experience filter (0-2 years)
 
 - `/scrape` asks LinkedIn for entry/associate levels only and drops Senior/Staff/Lead/Principal/level III+ titles before reading them
@@ -42,7 +47,7 @@ Handshake's logged-in job pages block AI agents (its robots.txt disallows `Claud
 ## Sponsorship rules (US, F-1 STEM OPT)
 
 - **PASS** - posting says it sponsors H-1B or accepts OPT/CPT -> resume is drafted
-- **FAIL** - "no sponsorship", "US citizens / green card only", clearance, ITAR -> excluded, wording quoted to you
+- **FAIL** - "no sponsorship", "US citizens / green card only", clearance, ITAR -> dropped: not added to the tracker or Sheet, only counted in the run summary
 - **UNKNOWN** - posting says nothing -> **no resume**; tracker + Sheet row with status **Check sponsorship** and the link
 
 For a **Check sponsorship** row: check the company's H-1B history (h1bdata.info, myvisajobs.com) or ask the recruiter. If they sponsor, run `/apply <link>` to draft the resume. If not, `/outcome <company>` -> withdrawn.
