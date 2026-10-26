@@ -117,11 +117,11 @@ For each sync-set row:
 2. **Key found → update cells only where needed, in the tab and columns where it was found:**
    - **Status (G):** if the sheet value already means the same thing as the tracker (`Phone screen` and `Interviewing` both mean `interview` - leave `Phone screen` alone), skip. Otherwise, **manual-edit guard:** if the current sheet value differs from `written_status[key]` (the user changed it by hand since the last sync), **do not overwrite** - list it under Conflicts and suggest `/outcome <company>` to record the change properly. Else write `sheet_status`.
    - **Date applied (D):** write when blank, or when the tracker row just moved out of `drafted` (date = the tracker `date`).
-   - **Link (J):** write only when blank and `source` is non-empty.
+   - **Link (J, or I in the AI tab):** write only when blank and `source` is non-empty.
    - **Reason (AI tab, H):** write `status_reason` whenever it differs from the cell.
    - **Sponsorship (M, or J in the AI tab):** write when blank and `sponsorship` is non-empty, or when it differs from the tracker (`UNKNOWN` -> `PASS` after the user confirmed sponsorship and re-ran `/apply`).
    - **Location (E) / Work type (F), `ai_tab` rows only:** fill from the same sources as an append when E is blank or F is blank or `Unknown`; a value already in the cell is never overwritten. Rows in `tab` (the user's original tracker) are never backfilled.
-   - Otherwise never touch E, F, H, I, K on an existing row.
+   - Otherwise never touch the user-owned columns on an existing row: E, F, H, I, K in `tab`; E, F, K, L, M in `ai_tab`.
    - **Last change:** on every Status write that changes the value, write the Last change cell (see "Showing what changed"), and add the change to this run's list for the banner and the Step 5 report.
 3. Record every Status value you write (or found already equivalent) in `written_status[key]`.
 4. Batch writes (`update_values` with several ranges per call). Rows the user added by hand (empty Key) are invisible to this command - never modify or number-shift them.

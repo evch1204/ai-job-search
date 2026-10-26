@@ -135,10 +135,13 @@ def sheet_status_equivalent(sheet_value: str, tracker_status: str) -> bool:
         (tracker_status or "").strip().lower().replace(" ", "_")
 
 
-WORK_TYPES = ("Remote", "Hybrid", "Onsite")
-# A bare country next to a remote listing ("Remote; United States") says where
-# the remote work is allowed, not that there is an office.
-COUNTRY_ONLY = {"united states", "usa", "us", "u.s.", "canada"}
+# Ashby boards tag the whole place list once: "SF, CA; New York, NY (Hybrid)".
+WORKPLACE_SUFFIX = re.compile(r"\((Remote|Hybrid|OnSite)\)\s*$", re.IGNORECASE)
+
+
+def url_key(url: str) -> str:
+    # Same identity as tools/scrape_state.py: a trailing slash is not a new posting.
+    return url.strip().rstrip("/")
 
 
 def load_places(seen_path: Path) -> dict[str, dict]:
@@ -146,31 +149,28 @@ def load_places(seen_path: Path) -> dict[str, dict]:
 
     The tracker has no location column, so a row without an archived posting
     (every `sponsorship_check` row) gets its place from the scraped entry. The
-    match is on the exact URL only: most imported rows have no URL, and a
+    match is on the URL only: most imported rows have no URL, and a
     company+title guess could attach another posting's city to them.
     """
     try:
-        seen = json.loads(seen_path.read_text(encoding="utf-8")).get("seen", {})
-    except (OSError, ValueError, AttributeError):
-        return {}
-    if not isinstance(seen, dict):
-        return {}
-    return {
-        e["url"].strip(): e
-        for e in seen.values()
-        if isinstance(e, dict) and isinstance(e.get("url"), str) and e["url"].strip()
-    }
+        seen = json.loads(seen_path.read_text(encoding="utf-8"))["seen"]
+        return {url_key(e["url"]): e for e in seen.values() if e.get("url")}
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return {}  # missing or malformed state file: no places, never a crash
 
 
 def work_type_from_location(location: str) -> str:
-    """Remote / Hybrid only when every listed place says so; else unknown ("")."""
+    """Work type the location string states outright; "" (unknown) otherwise.
+
+    Only two forms count: the Ashby suffix, and every place being a remote
+    listing ("Remote in USA"). "Seattle, WA; Remote" or "NYC (2 days remote)"
+    stays unknown rather than guessed.
+    """
+    m = WORKPLACE_SUFFIX.search(location)
+    if m:
+        return {"remote": "Remote", "hybrid": "Hybrid"}.get(m[1].lower(), "Onsite")
     places = [p.strip().lower() for p in location.split(";") if p.strip()]
-    places = [p for p in places if p not in COUNTRY_ONLY]
-    if places and all("remote" in p for p in places):
-        return "Remote"
-    if places and all("hybrid" in p for p in places):
-        return "Hybrid"
-    return ""
+    return "Remote" if places and all(p.startswith("remote") for p in places) else ""
 
 
 def place_for(row: dict, places: dict[str, dict]) -> tuple[str, str]:
@@ -178,16 +178,17 @@ def place_for(row: dict, places: dict[str, dict]) -> tuple[str, str]:
 
     The location is the scraped string verbatim, so a posting listed in several
     places keeps every one of them. Work type is the scoring agent's reading of
-    the posting, else inferred from the location.
+    the posting (tools/rank_state.py stores only Remote/Hybrid/Onsite), else
+    what the location string states.
     """
-    e = places.get((row.get("source") or "").strip())
+    source = url_key(row.get("source") or "")
+    e = places.get(source) if source else None
     if not e:
         return "", ""
-    location = e.get("location") if isinstance(e.get("location"), str) else ""
+    location = e.get("location") or ""
     if location in ("PASS", "FAIL", "FLAG"):
         location = ""  # legacy verdict stored under `location`, never a place
-    work_type = e.get("work_type") if e.get("work_type") in WORK_TYPES else ""
-    return location, work_type or work_type_from_location(location)
+    return location, e.get("work_type") or work_type_from_location(location)
 
 
 def read_tracker(path: Path) -> list[dict]:

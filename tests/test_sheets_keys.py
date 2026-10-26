@@ -61,6 +61,9 @@ class LocationFromSeenJobs(unittest.TestCase):
         # An imported row with no URL must not borrow another posting's city.
         places = self.places(company="Amazon", title="SDE", location="Seattle, WA")
         self.assertEqual(sheets_keys.place_for({"company": "Amazon", "role": "SDE", "source": ""}, places), ("", ""))
+        # Nor from an entry whose URL normalises to nothing.
+        junk = sheets_keys.load_places(self.write_seen({"k": {"url": "/", "location": "Seattle, WA"}}))
+        self.assertEqual(sheets_keys.place_for({"source": ""}, junk), ("", ""))
 
     def test_stored_work_type_wins_over_inference(self):
         row = {"source": self.URL}
@@ -70,22 +73,36 @@ class LocationFromSeenJobs(unittest.TestCase):
     def test_legacy_verdict_in_location_is_not_a_place(self):
         self.assertEqual(sheets_keys.place_for({"source": self.URL}, self.places(location="PASS")), ("", ""))
 
+    def test_trailing_slash_is_the_same_posting(self):
+        # scrape_state treats url.rstrip("/") as the identity; a pasted URL may differ.
+        self.assertEqual(sheets_keys.place_for({"source": self.URL + "/"}, self.places(location="Seattle, WA")),
+                         ("Seattle, WA", ""))
+
     def test_missing_or_broken_state_file_gives_no_places(self):
         self.assertEqual(sheets_keys.load_places(Path("/nonexistent/seen_jobs.json")), {})
-        tmp = TemporaryDirectory()
-        self.addCleanup(tmp.cleanup)
-        bad = Path(tmp.name) / "seen_jobs.json"
-        bad.write_text("not json", encoding="utf-8")
-        self.assertEqual(sheets_keys.load_places(bad), {})
+        path = self.write_seen({})
+        for bad in ("not json", "[]", '{"seen": []}', '{"seen": {"k": "x"}}'):
+            path.write_text(bad, encoding="utf-8")
+            self.assertEqual(sheets_keys.load_places(path), {}, bad)
 
-    def test_work_type_inferred_only_when_every_place_agrees(self):
+    def test_ashby_suffix_covers_every_listed_place(self):
+        infer = sheets_keys.work_type_from_location
+        self.assertEqual(infer("San Francisco, California; New York, New York (Hybrid)"), "Hybrid")
+        self.assertEqual(infer("SF, CA; Seattle, WA (Remote)"), "Remote")
+        self.assertEqual(infer("Austin, TX (OnSite)"), "Onsite")
+        self.assertEqual(infer("Remote - Multiple Locations; United States; Canada (Remote)"), "Remote")
+
+    def test_work_type_is_never_guessed_from_loose_wording(self):
         infer = sheets_keys.work_type_from_location
         self.assertEqual(infer("Remote in USA"), "Remote")
-        self.assertEqual(infer("Remote - Multiple Locations; United States; Canada (Remote)"), "Remote")
         self.assertEqual(infer("Seattle, WA; Remote"), "")  # office or remote: not knowable
-        self.assertEqual(infer("New York, NY (Hybrid)"), "Hybrid")
+        self.assertEqual(infer("New York, NY (Hybrid, 2 days remote)"), "")
+        self.assertEqual(infer("Austin, TX (not remote)"), "")
         self.assertEqual(infer("San Jose, CA"), "")
         self.assertEqual(infer(""), "")
+
+    def test_null_location_is_blank(self):
+        self.assertEqual(sheets_keys.place_for({"source": self.URL}, self.places(location=None)), ("", ""))
 
     def test_rows_command_emits_location_and_work_type(self):
         tmp = TemporaryDirectory()
