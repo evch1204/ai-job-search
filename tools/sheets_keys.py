@@ -14,7 +14,9 @@ are append-only and never reordered, so an existing row's key never changes.
 
 Usage:
     python3 tools/sheets_keys.py rows [job_search_tracker.csv]
-        -> JSON list of tracker rows with `key` and `sheet_status`, one per row
+        -> JSON list of tracker rows with `key` and `sheet_status`, one per row,
+           plus `location` / `work_type` from job_scraper/seen_jobs.json beside
+           the tracker, matched on the posting URL (every location, verbatim)
     python3 tools/sheets_keys.py import <sheet_export.csv> [job_search_tracker.csv]
         -> one-time: build the tracker from a CSV export of the JOB APPLICATIONS
            tab (header row: #,Company,Role,Date applied,...). Refuses to
@@ -133,6 +135,61 @@ def sheet_status_equivalent(sheet_value: str, tracker_status: str) -> bool:
         (tracker_status or "").strip().lower().replace(" ", "_")
 
 
+WORK_TYPES = ("Remote", "Hybrid", "Onsite")
+# A bare country next to a remote listing ("Remote; United States") says where
+# the remote work is allowed, not that there is an office.
+COUNTRY_ONLY = {"united states", "usa", "us", "u.s.", "canada"}
+
+
+def load_places(seen_path: Path) -> dict[str, dict]:
+    """seen_jobs.json entries indexed by posting URL.
+
+    The tracker has no location column, so a row without an archived posting
+    (every `sponsorship_check` row) gets its place from the scraped entry. The
+    match is on the exact URL only: most imported rows have no URL, and a
+    company+title guess could attach another posting's city to them.
+    """
+    try:
+        seen = json.loads(seen_path.read_text(encoding="utf-8")).get("seen", {})
+    except (OSError, ValueError, AttributeError):
+        return {}
+    if not isinstance(seen, dict):
+        return {}
+    return {
+        e["url"].strip(): e
+        for e in seen.values()
+        if isinstance(e, dict) and isinstance(e.get("url"), str) and e["url"].strip()
+    }
+
+
+def work_type_from_location(location: str) -> str:
+    """Remote / Hybrid only when every listed place says so; else unknown ("")."""
+    places = [p.strip().lower() for p in location.split(";") if p.strip()]
+    places = [p for p in places if p not in COUNTRY_ONLY]
+    if places and all("remote" in p for p in places):
+        return "Remote"
+    if places and all("hybrid" in p for p in places):
+        return "Hybrid"
+    return ""
+
+
+def place_for(row: dict, places: dict[str, dict]) -> tuple[str, str]:
+    """(location, work_type) for a tracker row; empty strings when unknown.
+
+    The location is the scraped string verbatim, so a posting listed in several
+    places keeps every one of them. Work type is the scoring agent's reading of
+    the posting, else inferred from the location.
+    """
+    e = places.get((row.get("source") or "").strip())
+    if not e:
+        return "", ""
+    location = e.get("location") if isinstance(e.get("location"), str) else ""
+    if location in ("PASS", "FAIL", "FLAG"):
+        location = ""  # legacy verdict stored under `location`, never a place
+    work_type = e.get("work_type") if e.get("work_type") in WORK_TYPES else ""
+    return location, work_type or work_type_from_location(location)
+
+
 def read_tracker(path: Path) -> list[dict]:
     if not path.exists():
         return []
@@ -142,9 +199,11 @@ def read_tracker(path: Path) -> list[dict]:
 
 def cmd_rows(tracker: Path) -> None:
     rows = read_tracker(tracker)
+    places = load_places(tracker.parent / "job_scraper" / "seen_jobs.json")
     out = []
     for i, (r, k) in enumerate(zip(rows, assign_keys(rows))):
         status = (r.get("status") or "").strip()
+        location, work_type = place_for(r, places)
         out.append({
             "row_index": i,
             "key": k,
@@ -156,6 +215,8 @@ def cmd_rows(tracker: Path) -> None:
             "status_reason": status_reason(status, r.get("notes", "")),
             "source": r.get("source", ""),
             "sponsorship": r.get("sponsorship") or "",
+            "location": location,
+            "work_type": work_type,
             "channel": r.get("channel", ""),
             "notes": r.get("notes", ""),
         })

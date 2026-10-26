@@ -87,8 +87,8 @@ It prints one JSON object per tracker row with a stable `key` and the `sheet_sta
 | B | Company | sync on append only |
 | C | Role | sync on append only |
 | D | Date applied | sync - fills when blank or when status leaves `drafted` |
-| E | Location | **user** - sync writes only on append |
-| F | Work type | **user** - sync writes only on append |
+| E | Location | **user** - sync writes on append, and fills it only while blank |
+| F | Work type | **user** - sync writes on append, and fills it only while blank or `Unknown` |
 | G | Status | sync - see Step 4; also `Skipped` (a `withdrawn` row the pipeline skipped) |
 | H | Reason | sync - `status_reason` from the tool: why the row has its status (skipped as too old, sponsorship unknown, user override); rewritten whenever it changes |
 | I | Link / email | sync - fills only when blank, from tracker `source` |
@@ -113,14 +113,15 @@ The user must be able to see at a glance that a row changed (a rejection found b
 
 For each sync-set row:
 
-1. **Key not in either tab → append** a row to `<ai_tab>!A:N` in the AI tab layout (or `<tab>!A:M` when no `ai_tab` is set): `#` = max + 1, Company, Role, Date applied (`MM/DD/YYYY`; blank while `drafted`), Location and Work type from the archived posting at `documents/applications/<company>_<role>/job_posting.md` when it states them (else blank / `Unknown`), Status = `sheet_status`, Reason = `status_reason` (AI tab only), Link = `source`, Notes blank, Key, Sponsorship = `sponsorship`. The Link is what the user applies through, so never drop it. Use `USER_ENTERED` so the date becomes a real date the dashboard formulas can count.
+1. **Key not in either tab → append** a row to `<ai_tab>!A:N` in the AI tab layout (or `<tab>!A:M` when no `ai_tab` is set): `#` = max + 1, Company, Role, Date applied (`MM/DD/YYYY`; blank while `drafted`), Location and Work type from the archived posting at `documents/applications/<company>_<role>/job_posting.md` when it states them, else the row's `location` / `work_type` from the tool (read from `seen_jobs.json` by posting URL - `sponsorship_check` rows have no archived posting, so theirs come from here), else blank / `Unknown` (**a posting listed in several places gets every one of them**, separated by `; ` as stored - never pick one), Status = `sheet_status`, Reason = `status_reason` (AI tab only), Link = `source`, Notes blank, Key, Sponsorship = `sponsorship`. The Link is what the user applies through, so never drop it. Use `USER_ENTERED` so the date becomes a real date the dashboard formulas can count.
 2. **Key found → update cells only where needed, in the tab and columns where it was found:**
    - **Status (G):** if the sheet value already means the same thing as the tracker (`Phone screen` and `Interviewing` both mean `interview` - leave `Phone screen` alone), skip. Otherwise, **manual-edit guard:** if the current sheet value differs from `written_status[key]` (the user changed it by hand since the last sync), **do not overwrite** - list it under Conflicts and suggest `/outcome <company>` to record the change properly. Else write `sheet_status`.
    - **Date applied (D):** write when blank, or when the tracker row just moved out of `drafted` (date = the tracker `date`).
    - **Link (J):** write only when blank and `source` is non-empty.
    - **Reason (AI tab, H):** write `status_reason` whenever it differs from the cell.
    - **Sponsorship (M, or J in the AI tab):** write when blank and `sponsorship` is non-empty, or when it differs from the tracker (`UNKNOWN` -> `PASS` after the user confirmed sponsorship and re-ran `/apply`).
-   - Never touch E, F, H, I, K on an existing row.
+   - **Location (E) / Work type (F), `ai_tab` rows only:** fill from the same sources as an append when E is blank or F is blank or `Unknown`; a value already in the cell is never overwritten. Rows in `tab` (the user's original tracker) are never backfilled.
+   - Otherwise never touch E, F, H, I, K on an existing row.
    - **Last change:** on every Status write that changes the value, write the Last change cell (see "Showing what changed"), and add the change to this run's list for the banner and the Step 5 report.
 3. Record every Status value you write (or found already equivalent) in `written_status[key]`.
 4. Batch writes (`update_values` with several ranges per call). Rows the user added by hand (empty Key) are invisible to this command - never modify or number-shift them.

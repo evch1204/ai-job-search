@@ -79,6 +79,10 @@ GATE_VERDICTS = ("PASS", "FAIL", "FLAG")
 # tracker as `sponsorship_check` for the user to check by hand (Step 4b).
 SPONSORSHIP_VERDICTS = ("PASS", "FAIL", "UNKNOWN")
 
+# Work arrangement the scoring agent read from the posting; /sheets-sync shows
+# it in the Work type column. "Unknown" is a valid answer but never stored.
+WORK_TYPES = ("Remote", "Hybrid", "Onsite")
+
 # Canonical tracker header (/apply Step 6b, /outcome Step 1). Columns are only
 # ever appended, so a legacy tracker is migrated by extending its header line.
 TRACKER_HEADER = (
@@ -491,6 +495,10 @@ def cmd_apply(args) -> int:
             value = result.get(field)
             if isinstance(value, list):
                 entry[field] = [str(b) for b in value][:3]
+        # Absence or "Unknown" is not a correction: a fetch that degraded to a
+        # listing page would otherwise erase what an earlier fetch read.
+        if result.get("work_type") in WORK_TYPES:
+            entry["work_type"] = result["work_type"]
         # The scoring agent's posting_guard verdict line ("clean" or the ⚠ line).
         # Additive and optional: an agent on an older prompt returns none, and
         # nothing is written. Stored so a later reader can see why a row carried

@@ -310,6 +310,26 @@ class Apply(RankStateCase):
         self.assertEqual(self.read_state()["b"]["guard"], "clean")
         self.assertEqual(out["vetoed"][0]["guard"], "clean")
 
+    def test_apply_persists_work_type_but_not_unknown(self):
+        # Feeds the sheet's Work type column. "Unknown" or absence never
+        # erases an arrangement an earlier fetch read.
+        self.write_state({"a": entry(status="new"), "b": entry(status="new", work_type="Hybrid"),
+                          "c": entry(status="new", work_type="Onsite")})
+        self.run_tool("apply", "--results", self.results([
+            self._scored(work_type="Remote"),
+            self._scored(key="b", work_type="Unknown"),
+            self._scored(key="c"),
+        ]))
+        state = self.read_state()
+        self.assertEqual(state["a"]["work_type"], "Remote")
+        self.assertEqual(state["b"]["work_type"], "Hybrid")
+        self.assertEqual(state["c"]["work_type"], "Onsite")
+
+    def test_apply_ignores_an_unrecognised_work_type(self):
+        self.write_state({"a": entry(status="new")})
+        self.run_tool("apply", "--results", self.results([self._scored(work_type="remote-ish")]))
+        self.assertNotIn("work_type", self.read_state()["a"])
+
     def test_apply_without_guard_key_unchanged(self):
         # An agent on the old prompt returns no `guard`: nothing is written and
         # the row carries None, exactly as before the field existed.
