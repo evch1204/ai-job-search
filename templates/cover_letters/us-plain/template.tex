@@ -1,0 +1,63 @@
+% us-plain: plain US business letter (Letter, Times-style serif, 11pt, 1in margins).
+% Order: sender block, date, recipient block, salutation, 4-5 paragraphs, closing.
+% No banner header, no bullets, no phone line. Compile with tectonic (XeTeX): see TEMPLATE.md.
+% Must be exactly 1 page.
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{fontspec}
+\setmainfont{texgyretermes}[
+  Extension = .otf,
+  UprightFont = *-regular,
+  BoldFont = *-bold,
+  ItalicFont = *-italic,
+  BoldItalicFont = *-bolditalic]
+\usepackage{xcolor}
+\usepackage[normalem]{ulem}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={[YOUR_NAME] - Cover Letter}, pdfauthor={[YOUR_NAME]}}
+\definecolor{linkblue}{HTML}{1155CC}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{11pt}
+\raggedright
+
+% The compile date, written out with an ordinal day: "October 26th, 2026".
+\newcommand{\letterdate}{%
+  \ifcase\month\or January\or February\or March\or April\or May\or June\or
+  July\or August\or September\or October\or November\or December\fi
+  \space\number\day
+  \ifcase\day\or st\or nd\or rd\or th\or th\or th\or th\or th\or th\or th\or
+  th\or th\or th\or th\or th\or th\or th\or th\or th\or th\or st\or nd\or rd\or
+  th\or th\or th\or th\or th\or th\or th\or st\fi
+  , \number\year}
+
+\begin{document}
+
+{[YOUR_NAME]}\\
+{[YOUR_STREET]}\\
+{[YOUR_CITY_STATE_ZIP]}\\
+\href{mailto:[YOUR_EMAIL]}{\textcolor{linkblue}{\uline{[YOUR_EMAIL]}}}\\
+\letterdate
+
+Hiring Manager\\
+{[COMPANY]}\\
+{[CITY, ST]}
+
+Dear Hiring Manager,
+
+{[Opening: the role and company by name, the degree, and the 2-3 strengths that make the fit, in 2-3 sentences.]}
+
+{[Experience paragraph: the most relevant role, framed toward the posting's tasks, with a concrete result.]}
+
+{[Experience paragraph: a second role or project that covers another requirement.]}
+
+{[Fit paragraph: why this company, from a verified specific, and how the candidate's work carries over.]}
+
+{[Close: what the candidate is excited to contribute, then thanks for considering the application.]}
+
+Sincerely,\\
+{[YOUR_NAME]}
+
+\end{document}

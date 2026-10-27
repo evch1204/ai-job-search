@@ -7,7 +7,7 @@
 This repo is a job application workspace. Claude acts as a career advisor and application assistant for Tei (Evan) Chang, helping with (US jobs only):
 1. **Job fit evaluation** - Assess US job postings against your profile (sponsorship first, then skills, experience, culture)
 2. **Resume tailoring** - Adapt the 1-page US resume template (`templates/cv/us-onepage`) to target specific roles
-3. **Cover letter writing** - For every application by default (LaTeX cover.cls); whether one is wanted usually only shows on the application form
+3. **Cover letter writing** - For every application by default (LaTeX plain business letter, `templates/cover_letters/us-plain`); whether one is wanted usually only shows on the application form
 4. **Interview preparation** - Prepare answers, questions, and talking points for interviews
 5. **Career strategy** - Advise on positioning and personal branding
 
@@ -63,7 +63,7 @@ Full factual profile: `.claude/skills/job-application-assistant/01-candidate-pro
 
 ## Repo Structure
 - `cv/` - LaTeX resume variants (1-page US template `templates/cv/us-onepage`; baseline `cv/baseline_general_swe.tex`)
-- `cover_letters/` - LaTeX cover letters (custom cover.cls template)
+- `cover_letters/` - LaTeX cover letters (plain business-letter template `templates/cover_letters/us-plain`; stock `cover.cls` kept for older letters)
 - `.claude/skills/` - AI skill definitions for the application workflow
 - `.agents/skills/` - Job search CLI tools
 
@@ -97,7 +97,7 @@ After creating or updating a CV or cover letter, re-read the generated file and 
 
 ### Consistency
 - [ ] Resume follows the 1-page `us-onepage` template: sections exactly Professional Experience, Projects, Education, Technical Skills - no summary, references, languages, or photo
-- [ ] Cover letter uses cover.cls template and established structure
+- [ ] Cover letter follows the `us-plain` template: sender block, date from `\letterdate` (ordinal day, e.g. "October 26th, 2026"), recipient block, "Dear Hiring Manager,", 4-5 paragraphs with no bullets, "Sincerely,"
 - [ ] Tone is consistent across CV and cover letter
 - [ ] No contradictions between CV and cover letter content
 
@@ -111,11 +111,11 @@ After creating or updating a CV or cover letter, re-read the generated file and 
 
 ### Compiled PDF verification (MANDATORY - never skip)
 Every document produced MUST be compiled and visually inspected via the Read tool on the PDF output. "Looks fine in the .tex" is not acceptable - LaTeX page-break decisions are unpredictable. Iterate until these all pass:
-- [ ] Resume compiled with the active template's declared command (**tectonic**, see the `ACTIVE-TEMPLATE` block in `05-cv-templates.md`). Cover letter, if any, compiled with **xelatex**-compatible tooling (cover.cls requires fontspec; `tectonic` works).
+- [ ] Resume compiled with the active template's declared command (**tectonic**, see the `ACTIVE-TEMPLATE` block in `05-cv-templates.md`). Cover letter, if any, compiled with **tectonic** (see the `ACTIVE-TEMPLATE` block in `06-cover-letter-templates.md`).
 - [ ] **Resume is exactly 1 page** - not 2
 - [ ] **Fits by cutting, not shrinking** - if the resume spills to a second page, cut the weakest bullet (oldest role first); never reduce the font size or margins
 - [ ] **Cover letter, if any, is exactly 1 page** - signature block must fit with the body, never overflow
-- [ ] **Cover letter bullet font matches body font** - `\lettercontent{}` must not wrap `\begin{itemize}...\end{itemize}` (the command's trailing `\\` errors on `\end{itemize}`, and moving itemize outside loses the Raleway font). Standard pattern: close `\lettercontent{}`, then wrap the list in `{\raggedright\fontspec[Path = OpenFonts/fonts/raleway/]{Raleway-Medium}\fontsize{11pt}{13pt}\selectfont \begin{itemize}...\end{itemize}\par}`
+- [ ] **Cover letter date is right** - it shows the day the letter was compiled, written "Month Dth, YYYY" with an ordinal day; never a hand-typed or stale date
 
 ### ATS & keyword verification (CV)
 ATS parsers read the PDF's embedded text layer, not the rendered page. Extract it with `python3 tools/verify_pdf.py cv/main_<company>_<role>.pdf --dump-text cv/main_<company>_<role>.txt` (pypdf, then `pdftotext -layout -enc UTF-8`) and verify what a parser sees. If both extractors are missing, skip the parseability items with a warning and check keyword coverage from the visual PDF read instead.

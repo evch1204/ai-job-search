@@ -5,18 +5,20 @@ framework_version: 1.2.0
 # Cover Letter Templates and Tailoring Guide
 
 <!-- BEGIN ACTIVE-TEMPLATE (managed by /add-template - do not edit by hand) -->
-> **Active template override: `cover-cls-tectonic`**
+> **Active template override: `us-plain`**
 >
 > A custom template is active. Where this block conflicts with the stock guidance below, this block wins. Structural advice below (tailoring, page-budget, cutting rules) still applies.
 >
-> - **Template skeleton:** `cover_letters/cover_example.tex` — the stock cover.cls letter; only the toolchain differs
-> - **Manifest:** none — the stock guidance below is the style guide
+> - **Template skeleton:** `templates/cover_letters/us-plain/template.tex` — use this as the structural reference instead of the stock template
+> - **Manifest:** `templates/cover_letters/us-plain/TEMPLATE.md` — read this for style rules and known pitfalls before drafting
 > - **Source extension:** `.tex`
-> - **Compile command:** `rm -f <file>.pdf && mkdir -p build && tectonic -X compile --outdir build <file>.tex && mv build/<file>.pdf ./` (not the `xelatex` command named in the stock guidance below — this machine has tectonic, a XeTeX engine, instead of a TeX distribution). Run it from the output directory. If it redirects to `build/`, the log is in `build/`, and `/apply`'s Step 5e cleanup must delete that `build/` folder too
-> - **Fonts:** Lato/Raleway from `cover_letters/OpenFonts/fonts/` (bundled; `\fontspec` paths are relative to `cover_letters/`)
+> - **Compile command:** `rm -f <file>.pdf && mkdir -p build && tectonic -X compile --outdir build <file>.tex && mv build/<file>.pdf ./` (not the `xelatex` command named in the stock guidance below). Run it from the output directory. If it redirects to `build/`, the log is in `build/`, and `/apply`'s Step 5e cleanup must delete that `build/` folder too
+> - **Fonts:** TeX Gyre Termes, from tectonic's bundle (no install; first compile downloads it)
 > - **Page limit:** exactly 1 page(s)
-> - **Output file:** `cover_letters/cover_<company>_<role>.tex`; `cover.cls` and `OpenFonts/` are already in that directory
-> - **When:** for every application by default - whether one is wanted usually only shows on the application form. Skip only when the user says so. US conventions: English, Letter paper, "Dear Hiring Manager" when no name is given, closing "Best regards,". Never state or imply US citizenship or permanent residency; when the posting raises work authorization, say plainly "I am on F-1 STEM OPT and will require H-1B sponsorship".
+> - **Layout check:** run `tools/verify_layout.py` on the letter with `--no-footer` (this template prints no page number)
+> - **Output file:** `cover_letters/cover_<company>_<role>.tex`; the template needs no companion class, package, or font files
+> - **The candidate's own format (2026-10-26) - these replace the stock structure below:** a plain business letter. Sender block (name, street, city/state/ZIP, email), the date from `\letterdate` (compile date, ordinal day: "October 26th, 2026" - never typed by hand), recipient block (Hiring Manager / company / City, ST), "Dear Hiring Manager," unless a name is given, 4-5 paragraphs of 250-350 words with **no bullet lists**, "Sincerely," and the name. Ignore the stock bullet, `\lettercontent{}` and Raleway guidance below; the content rules (verified company specific, honest gap, Claude Code by name) still apply
+> - **When:** for every application by default - whether one is wanted usually only shows on the application form. Skip only when the user says so. US conventions: English, Letter paper. Never state or imply US citizenship or permanent residency; when the posting raises work authorization, say plainly "I am on F-1 STEM OPT and will require H-1B sponsorship".
 <!-- END ACTIVE-TEMPLATE -->
 
 ## Template: Custom cover.cls (XeLaTeX)

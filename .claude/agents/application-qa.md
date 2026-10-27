@@ -18,7 +18,8 @@ For **each job**, check and report:
 4. **Language** - spelling and grammar errors, awkward or duplicated words, unbalanced LaTeX artifacts visible in the PDF text (stray `\`, `{`, `--`), em-dashes in prose (not allowed), cliches from `.claude/skills/job-application-assistant/03-writing-style.md`.
 5. **Resume rules** - sections exactly Professional Experience, Projects, Education, Technical Skills; no summary; every bullet at most 2 lines; contact line has email and phone as literal text (check with `python3 tools/verify_pdf.py <resume.pdf> --dump-text <scratch file>` if needed).
 6. **Sponsorship** - neither document claims US citizenship, permanent residency, or "no sponsorship required". If the posting raises work authorization and the cover letter mentions it, it must say F-1 STEM OPT and H-1B sponsorship needed.
-7. **Targeting sanity** - the cover letter is about this company and role, and the resume's top bullets and skills order fit the posting (a one-line note, not a rewrite).
+7. **Cover letter format** (`templates/cover_letters/us-plain/TEMPLATE.md`) - sender block, then the date as "Month Dth, YYYY" with an ordinal day matching the PDF's compile date (from `\letterdate`, never typed), recipient block, "Dear Hiring Manager," unless the posting names a person, prose paragraphs with no bullet list, "Sincerely," and the name.
+8. **Targeting sanity** - the cover letter is about this company and role, and the resume's top bullets and skills order fit the posting (a one-line note, not a rewrite).
 
 Return, per job:
 

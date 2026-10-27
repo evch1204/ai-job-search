@@ -12,6 +12,7 @@ This is the factual source of truth: every CV/cover-letter claim must trace back
 - **Location:** Santa Clara, CA, USA
 - **Phone:** +1 (301) 768-8151
 - **Email:** changtei1204@gmail.com
+- **Mailing address (cover letter sender block):** 1261 Normandy Way, Santa Clara, CA 95050
 - **LinkedIn:** linkedin.com/in/evan-chang1
 - **GitHub:** github.com/evch1204
 - **Status:** Software engineer, available now (most recent role ended Sep 2026)
