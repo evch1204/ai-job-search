@@ -154,6 +154,15 @@ export interface FilterOpts {
   sections: string[]
   includeNoSponsor: boolean
   includeClosed: boolean
+  today?: Date
+}
+
+/**
+ * A title naming this year or a later one ("2027 New Grad", "Class of 2026") is a
+ * program for students still graduating, never for someone who already has.
+ */
+export function futureClassTitle(title: string, today: Date): boolean {
+  return (title.match(/\b20\d\d\b/g) ?? []).some((y) => Number(y) >= today.getUTCFullYear())
 }
 
 /**
@@ -173,8 +182,10 @@ export function locationMatcher(term: string): (place: string) => boolean {
 export function filterPostings(postings: Posting[], opts: FilterOpts): Posting[] {
   const words = (opts.query ?? "").toLowerCase().split(/\s+/).filter(Boolean)
   const locs = (opts.locations ?? []).map((l) => l.trim()).filter(Boolean).map(locationMatcher)
+  const today = opts.today ?? new Date()
   return postings.filter((p) => {
     if (!opts.sections.includes(p.section)) return false
+    if (futureClassTitle(p.title, today)) return false
     if (!opts.includeClosed && p.closed) return false
     if (!opts.includeNoSponsor && p.sponsorship !== null) return false
     if (opts.jobage !== undefined && (p.ageDays === null || p.ageDays > opts.jobage)) return false

@@ -9,7 +9,7 @@ framework_version: 1.6.1
 ## Keep or Drop - the rule behind every gate
 
 **Drop silently only on a clear dealbreaker**; keep everything uncertain for the candidate to decide.
-- **Dropped** (never drafted, never written to the tracker or Google Sheet - only counted in the run summary): an explicit sponsorship refusal / US-citizens-or-green-card-only / clearance / ITAR (Sponsorship Gate FAIL), an Experience Gate FAIL (senior title, a required 3+ years, internship, or a graduation window that excludes Jun 2025), a required language not declared (Language Gate FAIL), or a role outside the United States.
+- **Dropped** (never drafted, never written to the tracker or Google Sheet - only counted in the run summary): an explicit sponsorship refusal / US-citizens-or-green-card-only / clearance / ITAR (Sponsorship Gate FAIL), an Experience Gate FAIL (senior title, more than 1 year required, internship, or a graduation window that excludes Jun 2025), a required language not declared (Language Gate FAIL), or a role outside the United States.
 - **Kept** (recorded with a Reason the candidate can read): sponsorship not stated (`sponsorship_check`), an older posting (Posting Age flag), an Experience or Language FLAG. Uncertainty is the candidate's call, never a silent skip.
 
 ## Sponsorship Gate (US work authorization) — run before scoring
@@ -36,9 +36,9 @@ Read the posting's work-authorization / sponsorship / "who can apply" / EEO-foot
 
 A role that is FAIL or UNKNOWN is not scored and not drafted. Everything below applies only to roles that PASS.
 
-## Experience Gate (0-2 years) — run before scoring
+## Experience Gate (1 year or less) — run before scoring
 
-The candidate has about **1 year** of full-time experience (Jan-Sep 2026) plus internships, so only roles open to **0-2 years** are in scope. Its verdict is tracked downstream as `experience_gate` (PASS/FAIL/FLAG) with a supporting `experience_note`; `/rank` treats a FAIL as a shortlist veto and `/apply` stops on it.
+The candidate has about **1 year** of full-time experience (Jan-Sep 2026) plus internships, so only roles that **require 1 year or less** are in scope - the candidate's own bar (2026-10-26): a required 2 years is too much, even though roles open to 0-2 years were in scope before. Its verdict is tracked downstream as `experience_gate` (PASS/FAIL/FLAG) with a supporting `experience_note`; `/rank` treats a FAIL as a shortlist veto and `/apply` stops on it.
 
 Read the posting's **required** qualifications (not "preferred" / "nice to have") and its title:
 
@@ -47,13 +47,14 @@ Read the posting's **required** qualifications (not "preferred" / "nice to have"
 | **Internship, co-op, apprenticeship or fellowship for students** (title or posting says intern/internship/co-op, or requires current enrollment / returning to school) | **FAIL** - the candidate has graduated and wants full-time roles |
 | New-grad / university / campus program restricted to a **graduation window that excludes Jun 2025** ("2027 New Grad", "graduating Dec 2026 - Aug 2027", "2027 Start", "currently enrolled") | **FAIL** - quote the window; the candidate graduated Jun 2025 |
 | Title says Senior, Sr., Staff, Principal, Lead, Manager, Director, Architect, Head of, or a level III+ (e.g. "Software Engineer III", "SDE III", "L5+") | **FAIL** - quote the title |
-| **Required** minimum of **3 or more years** ("3+ years", "minimum 4 years", "5-7 years") | **FAIL** - quote the requirement |
-| New grad, entry level, early career, university graduate, "Software Engineer I", 0-1 years, or no years stated for a non-senior title | **PASS** |
-| Required minimum of exactly **2 years** ("2+ years"), a level II title ("SDE II", "Software Engineer II") with no years stated, or 3+ years listed only as **preferred** | **FLAG** - score and draft normally, but surface the stretch to the user with the quoted line |
+| **Required** minimum of **more than 1 year** ("1.5+ years", "2+ years", "2-4 years", "3+ years", "5-7 years") | **FAIL** - quote the requirement |
+| Level II title ("SDE II", "Software Engineer II", "Engineer 2") with no years stated and no new-grad / entry-level wording | **FAIL** - quote the title; level II usually means about 2+ years |
+| New grad, entry level, early career, university graduate, "Software Engineer I", 0-1 years, a required minimum of 1 year ("1+ year", "1-3 years"), or no years stated for a non-senior title; a level II title also passes when the posting itself says new grad / early career or a minimum of 1 year or less ("SDE II (New Grad)", "0-2 years") | **PASS** |
+| More than 1 year listed only as **preferred** / nice to have ("2+ years preferred", "3+ years a plus") | **FLAG** - score and draft normally, but surface the stretch to the user with the quoted line |
 
 **New grad is in scope.** The candidate counts as a recent graduate (Jun 2025): a new-grad or early-career role PASSES when its stated graduation window includes Jun 2025 or it states no window ("recent graduate", "graduated within the last 2 years", "0-2 years"); it FAILS only when the window clearly excludes Jun 2025. Always quote the posting's graduation wording in `experience_note` when it states one.
 
-Use the **minimum** of a range ("2-4 years" -> 2 -> FLAG). "Or equivalent experience" does not lower the stated number. Internships and project work do not count toward the 1 year, so never present them as extra years of full-time experience.
+Use the **minimum** of a range ("1-3 years" -> 1 -> PASS; "2-4 years" -> 2 -> FAIL). "Or equivalent experience" does not lower the stated number. Internships and project work do not count toward the 1 year, so never present them as extra years of full-time experience.
 
 ## Posting Age — run before scoring
 
@@ -150,7 +151,7 @@ Does this role advance career goals and contain tasks that energize?
 | 0-39 | Dead end or backwards step |
 
 **Career goals:**
-- Full-time new-grad / early-career (0-2 yrs) software engineering role at a US company that sponsors H-1B
+- Full-time new-grad / early-career software engineering role requiring 1 year or less at a US company that sponsors H-1B
 - Build product-facing full-stack and AI/LLM-powered systems end to end
 - Grow on a strong engineering team with mentorship and ownership of shipped features
 

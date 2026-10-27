@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "path";
-import { filterPostings, locationMatcher, parseAge, parseList } from "../src/helpers";
+import { filterPostings, futureClassTitle, locationMatcher, parseAge, parseList } from "../src/helpers";
 
 const LIST = await Bun.file(join(import.meta.dir, "fixtures/list.md")).text();
 const TODAY = new Date("2026-10-23T12:00:00Z");
@@ -64,5 +64,15 @@ describe("filterPostings", () => {
     const fresh = filterPostings(all, { ...base, jobage: 7 });
     expect(fresh.every((p) => (p.ageDays ?? 999) <= 7)).toBe(true);
     expect(filterPostings(all, { ...base, query: "infra" })).toHaveLength(1);
+  });
+
+  test("drops titles naming this year's or a later graduating class", () => {
+    expect(futureClassTitle("Software Engineer, 2027 New Grad", TODAY)).toBe(true);
+    expect(futureClassTitle("Software Engineer - Class of 2026", TODAY)).toBe(true);
+    expect(futureClassTitle("Software Engineer (2025 Graduates)", TODAY)).toBe(false);
+    expect(futureClassTitle("Software Engineer New Grad", TODAY)).toBe(false);
+    const epsilon = all.find((p) => p.company === "Epsilon")!;
+    const rows = [epsilon, { ...epsilon, id: "e2", title: "Software Engineer - 2027 New Grad" }];
+    expect(filterPostings(rows, { ...base, today: TODAY }).map((p) => p.title)).toEqual(["Software Engineer New Grad"]);
   });
 });

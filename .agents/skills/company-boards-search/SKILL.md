@@ -4,7 +4,8 @@ version: 1.0.0
 description: >
   Use this skill to search employers' own job boards - Greenhouse, Lever and Ashby
   public endpoints - for a configurable list of companies (companies.json), with
-  title/location/age filters, senior/intern titles dropped, non-US places
+  title/location/age filters, senior/intern titles and future grad-class titles
+  ("2027 New Grad") dropped, non-US places
   excluded, and an optional sponsorship scan of the description that drops
   postings refusing visa sponsorship. Trigger phrases: company job boards,
   search Greenhouse, search Lever, search Ashby, jobs at <company>, check
@@ -43,7 +44,7 @@ bun run .agents/skills/company-boards-search/cli/src/cli.ts detail <greenhouse|l
 bun run .agents/skills/company-boards-search/cli/src/cli.ts companies
 ```
 
-Flags: `--query/-q` (all words in the title), `--location/-l` (comma list; short all-caps codes match whole words; places naming another country never match), `--jobage <days>` (dated boards only - undated Ashby jobs are kept), `--companies/-c`, `--ats greenhouse,lever,ashby`, `--all-levels` (keep senior/staff/lead/manager/intern titles, dropped by default), `--check-sponsorship` (Greenhouse and Lever descriptions; refusals dropped and counted in `meta.droppedNoSponsor`), `--page`, `--limit/-n`, `--format json|table|plain`.
+Flags: `--query/-q` (all words in the title), `--location/-l` (comma list; short all-caps codes match whole words; places naming another country never match), `--jobage <days>` (dated boards only - undated Ashby jobs are kept), `--companies/-c`, `--ats greenhouse,lever,ashby`, `--all-levels` (keep senior/staff/lead/manager/intern titles and titles naming this year's or a later graduating class, all dropped by default), `--check-sponsorship` (Greenhouse and Lever descriptions; refusals dropped and counted in `meta.droppedNoSponsor`), `--page`, `--limit/-n`, `--format json|table|plain`.
 
 Output: `{meta:{count,page,matched,droppedNoSponsor,boards,failed}, results:[{id,title,company,location,date,url,ats,sponsorship,sponsorshipQuote}]}`. `sponsorship` is `"yes"` (explicit offer), `null` (not stated or not checked) - refusals never appear.
 

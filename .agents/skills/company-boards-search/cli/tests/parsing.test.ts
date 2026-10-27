@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "path";
-import { filterJobs, locationMatcher, parseAshby, parseGreenhouse, parseLever, scanSponsorship, stripHtml } from "../src/helpers";
+import { filterJobs, futureClassTitle, locationMatcher, parseAshby, parseGreenhouse, parseLever, scanSponsorship, stripHtml } from "../src/helpers";
 
 const fx = (f: string) => Bun.file(join(import.meta.dir, "fixtures", f)).text();
 const acme = { name: "Acme", ats: "greenhouse" as const, slug: "acme" };
@@ -58,6 +58,14 @@ describe("filterJobs", () => {
     expect(titles).not.toContain("Staff Engineer");
     expect(titles).not.toContain("Software Engineer I"); // Remote - Canada only
     expect(titles).toContain("Software Engineer, Early Career");
+  });
+  test("drops titles naming this year's or a later graduating class unless all levels", () => {
+    expect(futureClassTitle("Software Engineer, 2027 New Grad", TODAY)).toBe(true);
+    expect(futureClassTitle("New Grad Software Engineer (Class of 2026)", TODAY)).toBe(true);
+    expect(futureClassTitle("Software Engineer, Early Career", TODAY)).toBe(false);
+    const grad = { ...all[0], title: "Software Engineer - 2027 New Grad" };
+    expect(filterJobs([grad], { allLevels: false, today: TODAY })).toHaveLength(0);
+    expect(filterJobs([grad], { allLevels: true, today: TODAY })).toHaveLength(1);
   });
   test("jobage drops old dated jobs but keeps undated (Ashby) ones", () => {
     const titles = filterJobs(all, { jobage: 7, allLevels: false, today: TODAY }).map((j) => j.title);

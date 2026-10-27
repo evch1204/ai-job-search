@@ -52,13 +52,14 @@ Full factual profile: `.claude/skills/job-application-assistant/01-candidate-pro
 - 1st place (of 20+ interns) - DuPont Internship Program Competition (2023)
 
 ### Target Roles & Sectors
-- New-grad / early-career (0-2 yrs) Software Engineer, Full-Stack, Frontend, Backend, AI/ML Engineer roles
+- New-grad / early-career Software Engineer, Full-Stack, Frontend, Backend, AI/ML Engineer roles that require **1 year or less** of experience
 - AI/LLM products and developer tools; SaaS and consumer tech; any US company that sponsors H-1B
 
 ### Deal-breakers
 - Role located outside the United States
 - Posting says no visa sponsorship, US citizens / green card only, or requires a security clearance / ITAR "US person" status
-- Roles needing more than 0-2 years: Senior / Staff / Lead / Principal titles, level III+, or a **required** 3+ years (see the Experience Gate in `04-job-evaluation.md`); a required 2 years or a level II title is a flag, not a deal-breaker
+- Roles needing more than 1 year: Senior / Staff / Lead / Principal titles, level II+ (unless the posting itself says new grad / early career), or a **required** minimum above 1 year ("1.5+", "2+", "2-4 years"); see the Experience Gate in `04-job-evaluation.md`. More than 1 year listed only as *preferred* is a flag, not a deal-breaker
+- New-grad programs for a later graduating class ("2027 New Grad", "graduating Dec 2026 - Jun 2027"): the candidate graduated Jun 2025, so a window that excludes it fails the Experience Gate
 
 ## Repo Structure
 - `cv/` - LaTeX resume variants (1-page US template `templates/cv/us-onepage`; baseline `cv/baseline_general_swe.tex`)
@@ -68,7 +69,7 @@ Full factual profile: `.claude/skills/job-application-assistant/01-candidate-pro
 
 ## Workflow for New Job Applications
 1. User provides a job posting (URL or text) - US roles only
-2. **Experience Gate, then Sponsorship Gate** (`04-job-evaluation.md`): experience FAIL (senior title or required 3+ years) -> stop. Sponsorship FAIL (no sponsorship / citizens-GC only / clearance) -> stop and quote it. UNKNOWN (posting silent) -> **do not draft**; record it in `job_search_tracker.csv` with status `sponsorship_check`, `sponsorship` = `UNKNOWN`, and the posting URL in `source`, then `/sheets-sync` so the user can check it and apply manually.
+2. **Experience Gate, then Sponsorship Gate** (`04-job-evaluation.md`): experience FAIL (senior title, or more than 1 year required) -> stop. Sponsorship FAIL (no sponsorship / citizens-GC only / clearance) -> stop and quote it. UNKNOWN (posting silent) -> **do not draft**; record it in `job_search_tracker.csv` with status `sponsorship_check`, `sponsorship` = `UNKNOWN`, and the posting URL in `source`, then `/sheets-sync` so the user can check it and apply manually.
 3. **Evaluate fit** (PASS only): skills match, experience match, culture match. Present this assessment to the user before proceeding.
 4. If good fit: create the targeted 1-page resume (`cv/main_<company>_<role>.tex`). Create a cover letter (`cover_letters/cover_<company>_<role>.tex`) **by default** - skip only when the user says so.
 5. **Verify the documents** (see Verification Checklist below); the copy to upload is `cv/submit/<company>_<role>/Tei_Chang_Resume.pdf`, never the `main_<company>_<role>` working file

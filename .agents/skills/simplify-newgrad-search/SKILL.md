@@ -26,7 +26,8 @@ allowed). Zero runtime dependencies - it runs with just `bun`.
   careers sites), which `/rank` and `/apply` fetch for the full text and real date.
 - Rows the list marks 🛂 (does NOT sponsor) or 🇺🇸 (US citizens only) are **dropped by
   default**, so clear sponsorship dealbreakers never reach the tracker. Closed (🔒)
-  postings are dropped too.
+  postings are dropped too, and so are titles naming this year's or a later
+  graduating class ("2027 New Grad", "Class of 2026"): those programs are for students.
 - The list has **no job description**: `detail` returns the row; fetch the employer URL
   for the posting text.
 

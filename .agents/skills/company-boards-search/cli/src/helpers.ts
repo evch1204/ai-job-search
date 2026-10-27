@@ -187,9 +187,17 @@ export function parseAshby(html: string, company: Company): Job[] {
   })
 }
 
-/** Titles outside the 0-2 year scope (04-job-evaluation.md Experience Gate). */
+/** Titles outside the 1-year scope (04-job-evaluation.md Experience Gate). */
 export const SENIOR_TITLE =
   /\b(senior|sr\.?|staff|principal|lead|manager|director|head|architect|vp|chief|iii|iv|v|intern|internship|co-?op)\b|\bL[5-9]\b/i
+
+/**
+ * A title naming this year or a later one ("2027 New Grad", "Class of 2026") is a
+ * program for students still graduating, never for someone who already has.
+ */
+export function futureClassTitle(title: string, today: Date): boolean {
+  return (title.match(/\b20\d\d\b/g) ?? []).some((y) => Number(y) >= today.getUTCFullYear())
+}
 
 /** A place naming another country is never a US match, whatever the term ("Remote - Canada"). */
 export const NON_US =
@@ -220,7 +228,7 @@ export function filterJobs(jobs: Job[], opts: FilterOpts): Job[] {
   return jobs.filter((j) => {
     const title = j.title.toLowerCase()
     if (!words.every((w) => title.includes(w))) return false
-    if (!opts.allLevels && SENIOR_TITLE.test(j.title)) return false
+    if (!opts.allLevels && (SENIOR_TITLE.test(j.title) || futureClassTitle(j.title, today))) return false
     if (locs.length) {
       const places = (j.location ?? "").split(/;|•|\|/).map((s) => s.trim())
       if (!places.some((p) => !NON_US.test(p) && locs.some((m) => m(p)))) return false

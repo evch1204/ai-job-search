@@ -37,7 +37,7 @@ Pick the top N by score per `/apply` **Batch apply** step B1 (sponsorship PASS, 
 - B4: `application-qa` checks every job; apply fixes, recompile, re-check once
 - B5: record, then one `/sheets-sync` at the end of the whole run
 
-If fewer than N jobs pass the gates, draft the ones that do and say how many were short and why (e.g. "only 7 passed - 12 had no sponsorship history, 4 required 3+ years").
+If fewer than N jobs pass the gates, draft the ones that do and say how many were short and why (e.g. "only 7 passed - 12 had no sponsorship history, 4 required more than 1 year").
 
 ---
 
