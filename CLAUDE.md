@@ -76,6 +76,8 @@ Full factual profile: `.claude/skills/job-application-assistant/01-candidate-pro
 6. Record the posting URL in the tracker's `source` column - every tracked job carries a link the user can apply through
 7. Prepare interview talking points based on the role requirements and your strengths
 
+**Company cap:** never more than 2 open roles per company in the tracker (drafted, sponsorship_check, applied, interview, offer). Pick a company's best-scoring roles and leave the rest out.
+
 **Several jobs at once** ("find the best 10 jobs and apply", "apply to 1-10"): use **Batch apply** in `.claude/commands/apply.md` - same full tailoring per job, 3-4 writer agents in parallel (~3 jobs each), then the `application-qa` agent checks every application before the user sees it. Never substitute template letters.
 
 **Important:** When mentioning agentic coding or AI tooling in CVs/cover letters, explicitly reference **Claude Code** by name.

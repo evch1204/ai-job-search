@@ -157,6 +157,8 @@ For every row in `apply`'s `needs_check` output, append a tracker row so the job
 
 ```bash
 python3 tools/rank_state.py track-unknown --keys "<needs_check keys, comma-separated>"
+# Company cap first: drop keys that would give a company more than 2 open tracker rows
+# (drafted, sponsorship_check, applied, interview, offer) - keep its best-scoring ones.
 ```
 
 It writes `status` = `sponsorship_check`, `sponsorship` = `UNKNOWN`, the posting URL in `source`, the deadline, and the quoted sponsorship note in `notes`, migrating the tracker header the same way `/apply` Step 6b does (header line only). It skips any company+role already in the tracker, so re-runs never duplicate a row. This is the **only** tracker write `/rank` makes: it records "check this one yourself", never an application. Then, if `job_scraper/sheets_sync.json` exists, offer to run `/sheets-sync` so the rows appear in the sheet as `Check sponsorship`.

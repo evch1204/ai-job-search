@@ -24,13 +24,13 @@ Run `/scrape`'s flow with **both** enabled portal CLIs in one message - `simplif
 
 ## Step 2: Rank (parallel)
 
-Run `/rank` on the new candidates with `posting-scorer` agents dispatched in one message (about 5 jobs each). Apply its gates exactly - experience, location, language, sponsorship, posting age - and record `needs_check` rows with `rank_state.py track-unknown`. Clear dealbreakers are dropped silently and only counted.
+Run `/rank` on the new candidates with `posting-scorer` agents dispatched in one message (about 5 jobs each). Apply its gates exactly - experience, location, language, sponsorship, posting age - and record `needs_check` rows with `rank_state.py track-unknown` - after applying the company cap (at most 2 open roles per company in the tracker; see `/apply` B1). Clear dealbreakers are dropped silently and only counted.
 
 ---
 
 ## Step 3: Apply to the best N (parallel)
 
-Pick the top N by score per `/apply` **Batch apply** step B1 (sponsorship PASS, or UNKNOWN with recent H-1B filings noted as "likely sponsor"). Then run Batch apply steps B2-B5 from `.claude/commands/apply.md` in batches of **10**:
+Pick the top N by score per `/apply` **Batch apply** step B1 (sponsorship PASS, or UNKNOWN with recent H-1B filings noted as "likely sponsor"; never more than 2 open roles per company in the tracker). Then run Batch apply steps B2-B5 from `.claude/commands/apply.md` in batches of **10**:
 
 - B2: fetch postings in parallel (`posting-fetcher`, ~3 jobs each)
 - B3: **3-4 writer agents** in one message, ~3 jobs each, using the Writer brief - full tailoring, never template letters
